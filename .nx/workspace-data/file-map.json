@@ -1,0 +1,651 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.7.2",
+  "pathMappings": {
+    "@salesbuddy/shared-types": [
+      "libs/shared/types/src/index.ts"
+    ],
+    "@salesbuddy/shared-utils": [
+      "libs/shared/utils/src/index.ts"
+    ],
+    "@salesbuddy/shared-constants": [
+      "libs/shared/constants/src/index.ts"
+    ],
+    "@salesbuddy/ui": [
+      "libs/ui/src/index.ts"
+    ],
+    "@salesbuddy/db": [
+      "libs/db/src/index.ts"
+    ],
+    "@salesbuddy/ai": [
+      "libs/ai/src/index.ts"
+    ],
+    "@salesbuddy/queue": [
+      "libs/queue/src/index.ts"
+    ],
+    "@salesbuddy/api-client": [
+      "libs/api-client/src/index.ts"
+    ]
+  },
+  "nxJsonPlugins": [
+    {
+      "name": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "previewTargetName": "preview"
+      }
+    },
+    {
+      "name": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    }
+  ],
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": "design-system/README.md",
+        "hash": "8073066212773226443"
+      },
+      {
+        "file": "design-system/product-features.md",
+        "hash": "6445590282654954976"
+      },
+      {
+        "file": "design-system/system-design.md",
+        "hash": "15768435768155530061"
+      },
+      {
+        "file": "nx.json",
+        "hash": "15923103572008521281"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "2631186491115452237"
+      },
+      {
+        "file": "package.json",
+        "hash": "5455392863228449102"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "16597943177946382897"
+      }
+    ],
+    "projectFileMap": {
+      "@salesbuddy/db": [
+        {
+          "file": "libs/db/migrations/001_initial_schema.sql",
+          "hash": "18279112990761794196"
+        },
+        {
+          "file": "libs/db/package.json",
+          "hash": "2504663509196504440",
+          "deps": [
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "libs/db/src/client.ts",
+          "hash": "690495236322007212",
+          "deps": [
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "libs/db/src/index.ts",
+          "hash": "10249793351371938256"
+        },
+        {
+          "file": "libs/db/src/repositories/deal.repository.ts",
+          "hash": "10826080438742916098",
+          "deps": [
+            "@salesbuddy/shared"
+          ]
+        },
+        {
+          "file": "libs/db/src/repositories/lead.repository.ts",
+          "hash": "229199683919084913",
+          "deps": [
+            "@salesbuddy/shared"
+          ]
+        },
+        {
+          "file": "libs/db/src/repositories/sequence.repository.ts",
+          "hash": "9573346805524901945",
+          "deps": [
+            "@salesbuddy/shared"
+          ]
+        }
+      ],
+      "@salesbuddy/shared": [
+        {
+          "file": "libs/shared/constants/src/index.ts",
+          "hash": "5674163191813439971"
+        },
+        {
+          "file": "libs/shared/package.json",
+          "hash": "11583215927419694168"
+        },
+        {
+          "file": "libs/shared/types/src/index.ts",
+          "hash": "5776780078958158049"
+        },
+        {
+          "file": "libs/shared/utils/src/index.ts",
+          "hash": "8392859006802049154"
+        }
+      ],
+      "@salesbuddy/ai": [
+        {
+          "file": "libs/ai/package.json",
+          "hash": "10298914826208081590",
+          "deps": [
+            "npm:@anthropic-ai/sdk"
+          ]
+        },
+        {
+          "file": "libs/ai/src/client.ts",
+          "hash": "12596071298388371515",
+          "deps": [
+            "npm:@anthropic-ai/sdk"
+          ]
+        },
+        {
+          "file": "libs/ai/src/index.ts",
+          "hash": "13884658364368747359"
+        },
+        {
+          "file": "libs/ai/src/prompts/email-writer.prompt.ts",
+          "hash": "13328327582496399073",
+          "deps": [
+            "npm:@anthropic-ai/sdk"
+          ]
+        },
+        {
+          "file": "libs/ai/src/prompts/lead-scoring.prompt.ts",
+          "hash": "3290751588972716753",
+          "deps": [
+            "npm:@anthropic-ai/sdk"
+          ]
+        },
+        {
+          "file": "libs/ai/src/prompts/proposal.prompt.ts",
+          "hash": "13810059416199497848",
+          "deps": [
+            "npm:@anthropic-ai/sdk"
+          ]
+        }
+      ],
+      "@salesbuddy/queue": [
+        {
+          "file": "libs/queue/package.json",
+          "hash": "17150008705135551813",
+          "deps": [
+            "npm:bullmq",
+            "npm:ioredis"
+          ]
+        },
+        {
+          "file": "libs/queue/src/index.ts",
+          "hash": "15481259952484097979"
+        },
+        {
+          "file": "libs/queue/src/queues.ts",
+          "hash": "14347276135704733722",
+          "deps": [
+            "npm:bullmq",
+            "npm:ioredis"
+          ]
+        }
+      ],
+      "@salesbuddy/api": [
+        {
+          "file": "apps/api/.env",
+          "hash": "13482016363994481106"
+        },
+        {
+          "file": "apps/api/.env.example",
+          "hash": "7690999496102763859"
+        },
+        {
+          "file": "apps/api/package.json",
+          "hash": "16142311248259754236",
+          "deps": [
+            "npm:@types/node@20.19.41",
+            "npm:pino-pretty",
+            "npm:ts-node",
+            "npm:ts-node-dev",
+            "npm:tsconfig-paths",
+            "npm:typescript",
+            "npm:@anthropic-ai/sdk",
+            "npm:@fastify/cors",
+            "npm:@fastify/helmet",
+            "npm:@fastify/jwt",
+            "npm:@fastify/rate-limit",
+            "npm:@supabase/supabase-js",
+            "npm:bullmq",
+            "npm:dotenv",
+            "npm:fastify",
+            "npm:fastify-plugin",
+            "npm:ioredis",
+            "npm:zod"
+          ]
+        },
+        {
+          "file": "apps/api/src/app.ts",
+          "hash": "11201756866773236551",
+          "deps": [
+            "npm:fastify",
+            "npm:@fastify/cors",
+            "npm:@fastify/helmet",
+            "npm:@fastify/rate-limit"
+          ]
+        },
+        {
+          "file": "apps/api/src/main.ts",
+          "hash": "9054899941596401211",
+          "deps": [
+            "npm:dotenv"
+          ]
+        },
+        {
+          "file": "apps/api/src/plugins/auth.plugin.ts",
+          "hash": "5394521569520138702",
+          "deps": [
+            "npm:fastify",
+            "npm:fastify-plugin",
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "apps/api/src/routes/admin/admin.routes.ts",
+          "hash": "981202626073356850",
+          "deps": [
+            "npm:fastify",
+            "npm:zod",
+            "@salesbuddy/db",
+            "@salesbuddy/shared"
+          ]
+        },
+        {
+          "file": "apps/api/src/routes/analytics/analytics.routes.ts",
+          "hash": "6501944698259507011",
+          "deps": [
+            "npm:fastify",
+            "@salesbuddy/db",
+            "@salesbuddy/shared"
+          ]
+        },
+        {
+          "file": "apps/api/src/routes/deals/deals.routes.ts",
+          "hash": "9590628189400293248",
+          "deps": [
+            "npm:fastify",
+            "npm:zod",
+            "@salesbuddy/db"
+          ]
+        },
+        {
+          "file": "apps/api/src/routes/leads/leads.routes.ts",
+          "hash": "12138211222360823996",
+          "deps": [
+            "npm:fastify",
+            "npm:zod",
+            "@salesbuddy/db",
+            "@salesbuddy/queue",
+            "@salesbuddy/ai",
+            [
+              "@salesbuddy/db",
+              "dynamic"
+            ]
+          ]
+        },
+        {
+          "file": "apps/api/src/routes/outreach/outreach.routes.ts",
+          "hash": "9929451258571424953",
+          "deps": [
+            "npm:fastify",
+            "npm:zod",
+            "@salesbuddy/db",
+            "@salesbuddy/ai"
+          ]
+        },
+        {
+          "file": "apps/api/src/routes/proposals/proposals.routes.ts",
+          "hash": "2862779531682976801",
+          "deps": [
+            "npm:fastify",
+            "npm:zod",
+            "@salesbuddy/db",
+            "@salesbuddy/ai",
+            "@salesbuddy/shared"
+          ]
+        },
+        {
+          "file": "apps/api/tsconfig.json",
+          "hash": "17511008078653384291"
+        }
+      ],
+      "@salesbuddy/web": [
+        {
+          "file": "apps/web/.env",
+          "hash": "5836666275035616807"
+        },
+        {
+          "file": "apps/web/dist/assets/index-BDfVBQuu.js",
+          "hash": "11913596775836245632"
+        },
+        {
+          "file": "apps/web/dist/assets/index-CYZKAfVG.css",
+          "hash": "5349321692550441416"
+        },
+        {
+          "file": "apps/web/dist/index.html",
+          "hash": "8016052259939540389"
+        },
+        {
+          "file": "apps/web/index.html",
+          "hash": "6867236062929856118"
+        },
+        {
+          "file": "apps/web/package.json",
+          "hash": "17650795075401776418",
+          "deps": [
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react@4.7.0",
+            "npm:autoprefixer",
+            "npm:postcss",
+            "npm:tailwindcss",
+            "npm:typescript",
+            "npm:vite@5.4.21",
+            "npm:@radix-ui/react-avatar",
+            "npm:@radix-ui/react-dialog",
+            "npm:@radix-ui/react-dropdown-menu",
+            "npm:@radix-ui/react-popover",
+            "npm:@radix-ui/react-select",
+            "npm:@radix-ui/react-separator",
+            "npm:@radix-ui/react-slot",
+            "npm:@radix-ui/react-switch",
+            "npm:@radix-ui/react-tabs",
+            "npm:@radix-ui/react-tooltip",
+            "npm:@supabase/supabase-js",
+            "npm:@tanstack/react-query",
+            "npm:@tanstack/react-table",
+            "npm:axios",
+            "npm:class-variance-authority",
+            "npm:clsx",
+            "npm:cmdk",
+            "npm:date-fns",
+            "npm:framer-motion",
+            "npm:lucide-react",
+            "npm:react",
+            "npm:react-dom",
+            "npm:react-router-dom",
+            "npm:recharts",
+            "npm:tailwind-merge",
+            "npm:zustand"
+          ]
+        },
+        {
+          "file": "apps/web/postcss.config.js",
+          "hash": "1886002347757770194"
+        },
+        {
+          "file": "apps/web/src/App.tsx",
+          "hash": "3532960328130944550",
+          "deps": [
+            "npm:react",
+            "npm:react-router-dom"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/common/CommandPalette.tsx",
+          "hash": "8277098265988921153",
+          "deps": [
+            "npm:react",
+            "npm:react-router-dom",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/layout/AppLayout.tsx",
+          "hash": "15683774821399338361",
+          "deps": [
+            "npm:react-router-dom"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/layout/AuthLayout.tsx",
+          "hash": "13053050153900374079",
+          "deps": [
+            "npm:react-router-dom",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/layout/Sidebar.tsx",
+          "hash": "17812607174054478938",
+          "deps": [
+            "npm:react",
+            "npm:react-router-dom",
+            "npm:lucide-react",
+            "npm:clsx"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/ui/Avatar.tsx",
+          "hash": "5982492271367617387"
+        },
+        {
+          "file": "apps/web/src/components/ui/Badge.tsx",
+          "hash": "1568179314219614331"
+        },
+        {
+          "file": "apps/web/src/components/ui/Button.tsx",
+          "hash": "14829067980818417388",
+          "deps": [
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/ui/Card.tsx",
+          "hash": "11365079947843957010"
+        },
+        {
+          "file": "apps/web/src/components/ui/Dialog.tsx",
+          "hash": "12662161109563472138",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/ui/Input.tsx",
+          "hash": "18349833124200575120",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/web/src/components/ui/PageHeader.tsx",
+          "hash": "16293249473989003947"
+        },
+        {
+          "file": "apps/web/src/components/ui/Toast.tsx",
+          "hash": "18026985389024111870",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/index.css",
+          "hash": "7081191056753885161"
+        },
+        {
+          "file": "apps/web/src/lib/supabase.ts",
+          "hash": "2008450667101708796",
+          "deps": [
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "apps/web/src/lib/utils.ts",
+          "hash": "15456290709904554663",
+          "deps": [
+            "npm:clsx",
+            "npm:tailwind-merge"
+          ]
+        },
+        {
+          "file": "apps/web/src/main.tsx",
+          "hash": "13314538789285997426",
+          "deps": [
+            "npm:react",
+            "npm:react-dom",
+            "npm:react-router-dom",
+            "npm:@tanstack/react-query"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/analytics/AnalyticsPage.tsx",
+          "hash": "12975676145066909888",
+          "deps": [
+            "npm:recharts"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/auth/CallbackPage.tsx",
+          "hash": "7270405582667534893",
+          "deps": [
+            "npm:react",
+            "npm:react-router-dom",
+            "npm:lucide-react",
+            [
+              "npm:@supabase/supabase-js",
+              "dynamic"
+            ]
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/auth/LoginPage.tsx",
+          "hash": "12071072590002387200",
+          "deps": [
+            "npm:react",
+            "npm:react-router-dom",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/dashboard/DashboardPage.tsx",
+          "hash": "11188247501471317388",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react",
+            "npm:recharts"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/deals/DealsPage.tsx",
+          "hash": "735651949712478582",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/landing/LandingPage.tsx",
+          "hash": "851673193357394071",
+          "deps": [
+            "npm:react-router-dom",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/leads/LeadsPage.tsx",
+          "hash": "3508387913989942921",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react",
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/outreach/OutreachPage.tsx",
+          "hash": "8324929233456442446",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/proposals/ProposalsPage.tsx",
+          "hash": "2424684334208718159",
+          "deps": [
+            "npm:react",
+            "npm:lucide-react"
+          ]
+        },
+        {
+          "file": "apps/web/src/pages/settings/SettingsPage.tsx",
+          "hash": "17353344516882040258",
+          "deps": [
+            "npm:react-router-dom",
+            "npm:lucide-react",
+            "npm:clsx"
+          ]
+        },
+        {
+          "file": "apps/web/src/store/auth.store.ts",
+          "hash": "11785641757881535359",
+          "deps": [
+            "npm:zustand",
+            "npm:@supabase/supabase-js"
+          ]
+        },
+        {
+          "file": "apps/web/src/store/command.store.ts",
+          "hash": "8132347187231836019",
+          "deps": [
+            "npm:zustand"
+          ]
+        },
+        {
+          "file": "apps/web/src/store/theme.store.ts",
+          "hash": "886077262782563967",
+          "deps": [
+            "npm:zustand"
+          ]
+        },
+        {
+          "file": "apps/web/src/store/workspace.store.ts",
+          "hash": "18095265584321305267",
+          "deps": [
+            "npm:zustand"
+          ]
+        },
+        {
+          "file": "apps/web/tailwind.config.js",
+          "hash": "14647801898785787806"
+        },
+        {
+          "file": "apps/web/tsconfig.json",
+          "hash": "8662998706344027342"
+        },
+        {
+          "file": "apps/web/vite.config.ts",
+          "hash": "3625236082347583226",
+          "deps": [
+            "npm:vite@5.4.21",
+            "npm:@vitejs/plugin-react@4.7.0"
+          ]
+        }
+      ]
+    }
+  },
+  "externalNodesHash": "13217219362167154781"
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+*.env
+apps/api/.env
+apps/web/.env
+.nx/cache

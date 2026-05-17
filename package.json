@@ -1,0 +1,28 @@
+{
+  "name": "salesbuddy",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "dev": "nx run-many --target=serve --projects=web,api --parallel",
+    "build": "nx run-many --target=build --all",
+    "lint": "nx run-many --target=lint --all",
+    "test": "nx run-many --target=test --all"
+  },
+  "devDependencies": {
+    "@nx/eslint": "22.7.2",
+    "@nx/js": "^22.7.2",
+    "@nx/node": "^22.7.2",
+    "@nx/react": "^22.7.2",
+    "@nx/vite": "^22.7.2",
+    "nx": "^22.7.2",
+    "typescript": "~5.5.0"
+  },
+  "dependencies": {
+    "@types/pg": "^8.20.0",
+    "pg": "^8.20.0"
+  }
+}

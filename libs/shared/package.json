@@ -1,0 +1,6 @@
+{
+  "name": "@salesbuddy/shared",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./types/src/index.ts"
+}

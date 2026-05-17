@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Twenty-style light theme */
+    --background: 0 0% 99%;
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+    --primary: 234 89% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 6% 10%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 234 89% 60%;
+    --radius: 0.5rem;
+
+    /* Sidebar */
+    --sidebar-bg: 240 6% 97%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-item: transparent;
+    --sidebar-item-hover: 240 5% 93%;
+    --sidebar-item-active: 240 5% 90%;
+    --sidebar-foreground: 240 6% 20%;
+    --sidebar-foreground-muted: 240 4% 55%;
+  }
+
+  .dark {
+    /* Pure dark theme — base: #050505 */
+    --background: 0 0% 2%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 234 89% 65%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 0 0% 11%;
+    --accent-foreground: 0 0% 90%;
+    --border: 0 0% 13%;
+    --input: 0 0% 13%;
+    --ring: 234 89% 65%;
+
+    /* Sidebar — slightly deeper than background */
+    --sidebar-bg: 0 0% 1.5%;
+    --sidebar-border: 0 0% 10%;
+    --sidebar-item: transparent;
+    --sidebar-item-hover: 0 0% 7%;
+    --sidebar-item-active: 0 0% 10%;
+    --sidebar-foreground: 0 0% 88%;
+    --sidebar-foreground-muted: 0 0% 45%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 13px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/40; }
+}
+
+@layer utilities {
+  .text-xxs { font-size: 11px; line-height: 16px; }
+  .sidebar-item {
+    @apply flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sidebar-foreground hover:bg-[hsl(var(--sidebar-item-hover))] transition-colors cursor-pointer select-none;
+  }
+  .sidebar-item.active {
+    @apply bg-[hsl(var(--sidebar-item-active))] font-medium;
+  }
+}
