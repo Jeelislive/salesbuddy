@@ -6,3 +6,4 @@ dist/
 apps/api/.env
 apps/web/.env
 .nx/cache
+.vercel

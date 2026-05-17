@@ -347,7 +347,7 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
           <span className="text-xs text-muted-foreground">{selected.size} selected</span>
           <button
             className="text-xs text-primary hover:underline"
-            onClick={() => setSelected(leads.size === selected.size ? new Set() : new Set(leads.map(l => l.id)))}
+            onClick={() => setSelected(leads.length === selected.size ? new Set() : new Set(leads.map(l => l.id)))}
           >
             {selected.size === leads.length ? 'Deselect all' : 'Select all'}
           </button>
