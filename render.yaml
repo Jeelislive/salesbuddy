@@ -3,7 +3,7 @@ services:
     name: salesbuddy-api
     runtime: node
     rootDir: .
-    buildCommand: npm install --ignore-scripts
+    buildCommand: npm install --ignore-scripts && cd apps/api && npm install --ignore-scripts
     startCommand: cd apps/api && npx ts-node --transpile-only -r tsconfig-paths/register src/main.ts
     healthCheckPath: /health
     envVars:
