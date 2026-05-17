@@ -21,15 +21,15 @@
     "fastify-plugin": "^4.5.1",
     "googleapis": "^171.4.0",
     "ioredis": "^5.3.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "~5.5.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
     "@types/ws": "^8.18.1",
     "pino-pretty": "^11.2.1",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "~5.5.0"
+    "ts-node-dev": "^2.0.0"
   }
 }
