@@ -111,6 +111,25 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
   const [imported, setImported] = useState<Set<string>>(new Set());
   const [importingAll, setImportingAll] = useState(false);
 
+  // On modal open, pre-seed `imported` with leads already in the workspace DB
+  useEffect(() => {
+    if (!open || !workspaceId) return;
+    supabase
+      .from('leads')
+      .select('email, metadata')
+      .eq('workspace_id', workspaceId)
+      .is('deleted_at', null)
+      .then(({ data }) => {
+        const keys = new Set<string>();
+        for (const row of data ?? []) {
+          if (row.email) keys.add(row.email.toLowerCase().trim());
+          const login = (row.metadata as any)?.login;
+          if (login) keys.add(login.toLowerCase().trim());
+        }
+        setImported(keys);
+      });
+  }, [open, workspaceId]);
+
   function resetResults() { setResults([]); setAiQuery(''); setError(''); }
 
   async function searchAI() {
@@ -146,8 +165,13 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
     finally { setLoading(false); }
   }
 
+  function leadKey(l: ApiLead): string {
+    // Prefer email as dedup key (matches both session and DB seed); fall back to login/name
+    return (l.email?.toLowerCase().trim()) || (l.rawData.login?.toLowerCase().trim()) || l.businessName;
+  }
+
   async function importLead(l: ApiLead) {
-    const key = l.rawData.login || l.businessName;
+    const key = leadKey(l);
     if (imported.has(key) || !workspaceId) return;
     const nameParts = apiLeadToName(l).split(' ');
     const source = tab === 'github' ? 'GitHub Developers' : 'AI Discovery';
@@ -157,7 +181,7 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
       email: l.email ?? null, company_name: apiLeadToCompany(l) || null,
       title: apiLeadToTitle(l) || null, score: l.score,
       status: l.score >= 80 ? 'qualified' : 'new', source,
-      metadata: { avatar: l.rawData.avatar, website: l.website },
+      metadata: { avatar: l.rawData.avatar, website: l.website, login: l.rawData.login },
     }).select('id, first_name, last_name, email, company_name, title, score, status, source, created_at').single();
     if (data) {
       setImported(prev => new Set([...prev, key]));
@@ -174,7 +198,7 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
     setImportingAll(false);
   }
 
-  const notImported = results.filter(l => !imported.has(l.rawData.login || l.businessName));
+  const notImported = results.filter(l => !imported.has(leadKey(l)));
   const isGitHub = tab === 'github';
   const activeQuery = isGitHub ? ghQuery : prompt;
   const search = isGitHub ? searchGitHub : searchAI;
@@ -254,7 +278,7 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
               )}
               <div className="divide-y divide-border">
                 {results.map((l, i) => {
-                  const key = l.rawData.login || l.businessName;
+                  const key = leadKey(l);
                   const done = imported.has(key);
                   return (
                     <div key={i} className="flex items-center gap-4 px-6 py-3.5 hover:bg-accent/40 transition-colors">
