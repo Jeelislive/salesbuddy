@@ -7,6 +7,21 @@ import { anthropic } from '@salesbuddy/ai';
 
 const LEAD_SCRAPER_API = 'https://leadapi-y92c.onrender.com/api/scrapers/leads';
 
+// ─── Email Verification ───────────────────────────────────────────────────────
+
+import { promises as dns } from 'dns';
+
+async function isEmailValid(email: string): Promise<boolean> {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+  const domain = email.split('@')[1];
+  try {
+    const records = await dns.resolveMx(domain);
+    return records.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 // ─── GitHub Developer Scraper ─────────────────────────────────────────────────
 
 const NOREPLY_RE = /^(\d+\+)?[^@]+@users\.noreply\.github\.com$/i;
@@ -390,6 +405,63 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
         fastify.log.error(err);
         return reply.status(502).send({ error: 'Failed to fetch leads from external source' });
       }
+    },
+  );
+
+  // POST /leads/verify-emails — bulk MX verify all unverified leads in workspace
+  fastify.post(
+    '/verify-emails',
+    { preHandler: authenticate },
+    async (request, reply) => {
+      const { createUserClient } = await import('@salesbuddy/db');
+      const db = createUserClient(request.headers.authorization!.slice(7));
+
+      const { data: leads, error } = await db
+        .from('leads')
+        .select('id, email')
+        .eq('workspace_id', request.workspaceId)
+        .eq('email_status', 'unverified')
+        .not('email', 'is', null)
+        .is('deleted_at', null)
+        .limit(100);
+
+      if (error) return reply.status(500).send({ error: 'DB query failed' });
+
+      let valid = 0, invalid = 0;
+      for (const lead of leads ?? []) {
+        const ok = await isEmailValid(lead.email);
+        await db.from('leads').update({ email_status: ok ? 'valid' : 'invalid' }).eq('id', lead.id);
+        ok ? valid++ : invalid++;
+      }
+
+      return reply.send({ valid, invalid, total: (leads ?? []).length });
+    },
+  );
+
+  // POST /leads/:id/verify-email — verify a single lead's email on demand
+  fastify.post(
+    '/:id/verify-email',
+    { preHandler: authenticate },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const { createUserClient } = await import('@salesbuddy/db');
+      const db = createUserClient(request.headers.authorization!.slice(7));
+
+      const { data: lead } = await db
+        .from('leads')
+        .select('id, email')
+        .eq('workspace_id', request.workspaceId)
+        .eq('id', id)
+        .single();
+
+      if (!lead) return reply.status(404).send({ error: 'Lead not found' });
+      if (!lead.email) return reply.status(400).send({ error: 'Lead has no email' });
+
+      const ok = await isEmailValid(lead.email);
+      const email_status = ok ? 'valid' : 'invalid';
+      await db.from('leads').update({ email_status }).eq('id', id);
+
+      return reply.send({ email_status });
     },
   );
 

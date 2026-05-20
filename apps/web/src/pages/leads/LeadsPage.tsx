@@ -3,6 +3,7 @@ import {
   Search, Plus, Filter, Download, Sparkles, MoreHorizontal,
   Loader2, UserPlus, CheckCircle, X, ChevronDown, Trash2,
   Upload, FileText, AlertTriangle, Mail, Globe, Tag, Calendar, Building, ExternalLink, Github,
+  ShieldCheck, ShieldX, ShieldQuestion,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -16,11 +17,14 @@ import { useAuthStore } from '@/store/auth.store';
 import { useToast } from '@/components/ui/Toast';
 
 /* ── Types ── */
+type EmailStatus = 'unverified' | 'valid' | 'invalid';
+
 interface Lead {
   id: string; name: string; email: string; company: string;
   title: string; score: number;
   status: 'qualified' | 'contacted' | 'new' | 'disqualified';
   source: string; createdAt: string; avatar?: string; website?: string;
+  emailStatus?: EmailStatus;
 }
 
 interface ApiLead {
@@ -603,15 +607,17 @@ export function LeadsPage() {
   const [findOpen, setFindOpen]   = useState(false);
   const [addOpen, setAddOpen]     = useState(false);
   const [selected, setSelected]   = useState<Set<string>>(new Set());
-  const [deleting, setDeleting]   = useState(false);
+  const [deleting, setDeleting]     = useState(false);
   const [detailLead, setDetailLead] = useState<Lead | null>(null);
+  const [verifying, setVerifying]   = useState(false);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   const loadLeads = useCallback(async () => {
     if (!workspaceId) return;
     setDbLoading(true);
     const { data } = await supabase
       .from('leads')
-      .select('id, first_name, last_name, email, company_name, title, score, status, source, created_at, metadata')
+      .select('id, first_name, last_name, email, company_name, title, score, status, source, created_at, metadata, email_status')
       .eq('workspace_id', workspaceId).is('deleted_at', null)
       .order('created_at', { ascending: false });
     setLeads((data ?? []).map(l => ({
@@ -621,6 +627,7 @@ export function LeadsPage() {
       source: l.source ?? 'Manual', createdAt: l.created_at,
       avatar: (l.metadata as any)?.avatar,
       website: (l.metadata as any)?.website,
+      emailStatus: ((l as any).email_status ?? 'unverified') as EmailStatus,
     })));
     setDbLoading(false);
   }, [workspaceId]);
@@ -688,6 +695,37 @@ export function LeadsPage() {
     } finally { setEnriching(false); }
   }
 
+  async function handleVerifyAll() {
+    if (verifying || !session?.access_token) return;
+    setVerifying(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/leads/verify-emails`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      });
+      const { valid = 0, invalid = 0, total = 0 } = await res.json();
+      toast(`Verified ${total} emails — ${valid} valid, ${invalid} invalid`, 'success');
+      await loadLeads();
+    } catch { toast('Verification failed', 'error'); }
+    finally { setVerifying(false); }
+  }
+
+  async function handleVerifyOne(lead: Lead, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (verifyingId || !session?.access_token) return;
+    setVerifyingId(lead.id);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/leads/${lead.id}/verify-email`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+      const { email_status } = await res.json();
+      setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, emailStatus: email_status } : l));
+      toast(`Email ${email_status === 'valid' ? 'verified valid' : 'marked invalid'}`, email_status === 'valid' ? 'success' : 'error');
+    } catch { toast('Verification failed', 'error'); }
+    finally { setVerifyingId(null); }
+  }
+
   return (
     <div className="h-full flex flex-col relative">
       <PageHeader
@@ -727,6 +765,12 @@ export function LeadsPage() {
               icon={enriching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
               onClick={handleEnrich}>
               {enriching ? 'Enriching…' : 'AI Enrich'}
+            </Button>
+
+            <Button variant="outline" size="sm" disabled={verifying || leads.length === 0}
+              icon={verifying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+              onClick={handleVerifyAll}>
+              {verifying ? 'Verifying…' : 'Verify Emails'}
             </Button>
 
             <Button variant="outline" size="sm" icon={<UserPlus className="w-3.5 h-3.5" />}
@@ -783,6 +827,7 @@ export function LeadsPage() {
                 <th className="text-left px-4 py-2.5 font-medium">Contact</th>
                 <th className="text-left px-4 py-2.5 font-medium">Company</th>
                 <th className="text-left px-4 py-2.5 font-medium">Title</th>
+                <th className="text-left px-4 py-2.5 font-medium">Email</th>
                 <th className="text-left px-4 py-2.5 font-medium">AI Score</th>
                 <th className="text-left px-4 py-2.5 font-medium">Status</th>
                 <th className="text-left px-4 py-2.5 font-medium">Source</th>
@@ -813,6 +858,26 @@ export function LeadsPage() {
                   </td>
                   <td className="px-4 py-3 text-sm">{lead.company}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground max-w-[180px] truncate">{lead.title || '—'}</td>
+                  <td className="px-4 py-3">
+                    {lead.email ? (
+                      <button
+                        onClick={e => handleVerifyOne(lead, e)}
+                        disabled={verifyingId === lead.id}
+                        title={lead.emailStatus === 'valid' ? 'Email verified' : lead.emailStatus === 'invalid' ? 'Email invalid — click to re-check' : 'Click to verify email'}
+                        className="flex items-center gap-1.5 text-xs transition-colors disabled:opacity-50">
+                        {verifyingId === lead.id
+                          ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
+                          : lead.emailStatus === 'valid'
+                            ? <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                            : lead.emailStatus === 'invalid'
+                              ? <ShieldX className="w-3.5 h-3.5 text-red-500" />
+                              : <ShieldQuestion className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />}
+                        <span className={lead.emailStatus === 'valid' ? 'text-emerald-500' : lead.emailStatus === 'invalid' ? 'text-red-500' : 'text-muted-foreground'}>
+                          {lead.emailStatus === 'valid' ? 'Valid' : lead.emailStatus === 'invalid' ? 'Invalid' : 'Verify'}
+                        </span>
+                      </button>
+                    ) : <span className="text-xs text-muted-foreground/40">—</span>}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-14 h-1.5 rounded-full bg-muted overflow-hidden">
