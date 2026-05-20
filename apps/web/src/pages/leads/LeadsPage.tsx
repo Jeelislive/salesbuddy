@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Search, Plus, Filter, Download, Sparkles, MoreHorizontal,
   Loader2, UserPlus, CheckCircle, X, ChevronDown, Trash2,
-  Upload, FileText, AlertTriangle,
+  Upload, FileText, AlertTriangle, Mail, Globe, Tag, Calendar, Building, ExternalLink,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -20,7 +20,7 @@ interface Lead {
   id: string; name: string; email: string; company: string;
   title: string; score: number;
   status: 'qualified' | 'contacted' | 'new' | 'disqualified';
-  source: string; createdAt: string; avatar?: string;
+  source: string; createdAt: string; avatar?: string; website?: string;
 }
 
 interface ApiLead {
@@ -462,6 +462,85 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
   );
 }
 
+/* ─────────────────────── Lead Detail Modal ─────────────────────── */
+function LeadDetailModal({ lead, onClose }: { lead: Lead | null; onClose: () => void }) {
+  if (!lead) return null;
+  const scoreColor = lead.score >= 80 ? 'text-emerald-500' : lead.score >= 50 ? 'text-amber-500' : 'text-muted-foreground';
+  return (
+    <Dialog open={!!lead} onClose={onClose} title="Lead Details" size="md">
+      <div className="space-y-4">
+        <div className="flex items-start gap-4 pb-4 border-b border-border">
+          {lead.avatar
+            ? <img src={lead.avatar} className="w-14 h-14 rounded-full object-cover flex-shrink-0" alt="" />
+            : <Avatar fallback={(lead.name[0] || '?').toUpperCase()} size="sm" />}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold">{lead.name}</h3>
+            {lead.title && <p className="text-sm text-muted-foreground">{lead.title}</p>}
+            {lead.company && lead.company !== '—' && <p className="text-xs text-muted-foreground mt-0.5">{lead.company}</p>}
+          </div>
+          <div className="text-right flex-shrink-0">
+            <div className={`text-2xl font-bold tabular-nums ${scoreColor}`}>{lead.score}</div>
+            <div className="text-xs text-muted-foreground">AI Score</div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {lead.email && (
+            <div className="flex items-center gap-3">
+              <Mail className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <a href={`mailto:${lead.email}`} className="text-sm text-primary hover:underline break-all">{lead.email}</a>
+            </div>
+          )}
+          {lead.company && lead.company !== '—' && (
+            <div className="flex items-center gap-3">
+              <Building className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <span className="text-sm">{lead.company}</span>
+            </div>
+          )}
+          {lead.website && (
+            <div className="flex items-center gap-3">
+              <Globe className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <a href={lead.website} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-primary hover:underline truncate max-w-xs">
+                {lead.website.replace(/^https?:\/\//, '')}
+              </a>
+            </div>
+          )}
+          <div className="flex items-center gap-3">
+            <Tag className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <Badge variant={STATUS_BADGE[lead.status] ?? 'muted'}>{lead.status}</Badge>
+          </div>
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-muted-foreground">{lead.source}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Calendar className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-muted-foreground">
+              {new Date(lead.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-border flex gap-2">
+          {lead.email && (
+            <a href={`mailto:${lead.email}`}
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2 px-3 rounded-lg border border-border hover:bg-accent transition-colors">
+              <Mail className="w-4 h-4" /> Email
+            </a>
+          )}
+          {lead.website && (
+            <a href={lead.website} target="_blank" rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 text-sm font-medium py-2 px-3 rounded-lg border border-border hover:bg-accent transition-colors">
+              <ExternalLink className="w-4 h-4" /> Visit Website
+            </a>
+          )}
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
 /* ─────────────────────── Main Page ─────────────────────── */
 export function LeadsPage() {
   const { workspaceId }   = useWorkspaceStore();
@@ -477,6 +556,7 @@ export function LeadsPage() {
   const [addOpen, setAddOpen]     = useState(false);
   const [selected, setSelected]   = useState<Set<string>>(new Set());
   const [deleting, setDeleting]   = useState(false);
+  const [detailLead, setDetailLead] = useState<Lead | null>(null);
 
   const loadLeads = useCallback(async () => {
     if (!workspaceId) return;
@@ -492,6 +572,7 @@ export function LeadsPage() {
       score: l.score ?? 0, status: (l.status ?? 'new') as Lead['status'],
       source: l.source ?? 'Manual', createdAt: l.created_at,
       avatar: (l.metadata as any)?.avatar,
+      website: (l.metadata as any)?.website,
     })));
     setDbLoading(false);
   }, [workspaceId]);
@@ -664,6 +745,7 @@ export function LeadsPage() {
             <tbody className="divide-y divide-border">
               {filtered.map(lead => (
                 <tr key={lead.id}
+                  onClick={() => setDetailLead(lead)}
                   className={`hover:bg-accent/50 transition-colors cursor-pointer group ${selected.has(lead.id) ? 'bg-primary/5' : ''}`}>
                   <td className="w-10 pl-4 py-3">
                     <input type="checkbox" checked={selected.has(lead.id)} onChange={() => toggleSelect(lead.id)}
@@ -738,6 +820,7 @@ export function LeadsPage() {
         onImport={l => setLeads(prev => [l, ...prev])} workspaceId={workspaceId} session={session} />
       <AddLeadModal open={addOpen} onClose={() => setAddOpen(false)}
         onAdd={newLeads => setLeads(prev => [...newLeads, ...prev])} workspaceId={workspaceId} />
+      <LeadDetailModal lead={detailLead} onClose={() => setDetailLead(null)} />
     </div>
   );
 }
