@@ -316,11 +316,13 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
   async function importCSV() {
     if (!csvRows.length || !workspaceId) return;
     setImporting(true); setError('');
-    const batch = csvRows.map(r => ({
+    const validRows = csvRows.filter(r => r.email.trim());
+    if (!validRows.length) { setError('No rows with email addresses found'); setImporting(false); return; }
+    const batch = validRows.map(r => ({
       workspace_id: workspaceId,
       first_name: r.first_name || r.email.split('@')[0] || 'Unknown',
       last_name: r.last_name || '',
-      email: r.email || null,
+      email: r.email.trim(),
       company_name: r.company_name || null,
       title: r.title || null,
       source: r.source || 'CSV Import',
@@ -330,7 +332,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
     const { data, error: err } = await supabase.from('leads').insert(batch)
       .select('id, first_name, last_name, email, company_name, title, score, status, source, created_at');
     if (err) { setError(err.message); setImporting(false); return; }
-    const imported: Lead[] = (data ?? []).map(l => ({
+    const imported: Lead[] = (data ?? []).map((l: any) => ({
       id: l.id, name: `${l.first_name} ${l.last_name}`.trim(),
       email: l.email ?? '', company: l.company_name ?? '', title: l.title ?? '',
       score: 0, status: (l.status ?? 'new') as Lead['status'],
@@ -368,7 +370,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
               {field('First Name *', 'first_name', 'text', 'John')}
               {field('Last Name', 'last_name', 'text', 'Doe')}
             </div>
-            {field('Email', 'email', 'email', 'john@company.com')}
+            {field('Email *', 'email', 'email', 'john@company.com')}
             {field('Company', 'company_name', 'text', 'Acme Inc.')}
             {field('Job Title', 'title', 'text', 'VP Engineering')}
             <div className="space-y-1">
@@ -384,7 +386,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
             {error && <p className="text-xs text-red-500">{error}</p>}
             <div className="flex gap-2 pt-1">
               <Button variant="outline" size="sm" onClick={onClose} className="flex-1">Cancel</Button>
-              <Button size="sm" onClick={saveManual} disabled={saving || !form.first_name.trim()} className="flex-1">
+              <Button size="sm" onClick={saveManual} disabled={saving || !form.first_name.trim() || !form.email.trim()} className="flex-1">
                 {saving ? 'Adding…' : 'Add Lead'}
               </Button>
             </div>
@@ -452,7 +454,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
               <Button variant="outline" size="sm" onClick={onClose} className="flex-1">Cancel</Button>
               <Button size="sm" onClick={importCSV} disabled={importing || csvRows.length === 0} className="flex-1"
                 icon={importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}>
-                {importing ? 'Importing…' : `Import ${csvRows.length} Leads`}
+                {importing ? 'Importing…' : `Import ${csvRows.filter(r => r.email.trim()).length} Leads (email only)`}
               </Button>
             </div>
           </div>
