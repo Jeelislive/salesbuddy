@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Search, Plus, Filter, Download, Sparkles, MoreHorizontal,
   Loader2, UserPlus, CheckCircle, X, ChevronDown, Trash2,
-  Upload, FileText, AlertTriangle, Mail, Globe, Tag, Calendar, Building, ExternalLink,
+  Upload, FileText, AlertTriangle, Mail, Globe, Tag, Calendar, Building, ExternalLink, Github,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -96,29 +96,29 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
   open: boolean; onClose: () => void; onImport: (l: Lead) => void;
   workspaceId: string | null; session: import('@supabase/supabase-js').Session | null;
 }) {
-  const [prompt, setPrompt]   = useState('');
-  const [limit, setLimit]     = useState(10);
-  const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<ApiLead[]>([]);
-  const [aiQuery, setAiQuery] = useState('');
-  const [error, setError]     = useState('');
+  const [tab, setTab]           = useState<'ai' | 'github'>('ai');
+  const [prompt, setPrompt]     = useState('');
+  const [ghQuery, setGhQuery]   = useState('');
+  const [limit, setLimit]       = useState(10);
+  const [loading, setLoading]   = useState(false);
+  const [results, setResults]   = useState<ApiLead[]>([]);
+  const [aiQuery, setAiQuery]   = useState('');
+  const [error, setError]       = useState('');
   const [imported, setImported] = useState<Set<string>>(new Set());
   const [importingAll, setImportingAll] = useState(false);
 
-  async function search() {
-    if (!prompt.trim()) return;
-    if (!session?.access_token) { setError('You must be signed in to search for leads.'); return; }
-    setLoading(true); setError(''); setResults([]); setAiQuery('');
+  function resetResults() { setResults([]); setAiQuery(''); setError(''); }
+
+  async function searchAI() {
+    if (!prompt.trim() || !session?.access_token) { setError('You must be signed in.'); return; }
+    setLoading(true); resetResults();
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/leads/ai-discover`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
         body: JSON.stringify({ prompt, limit }),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Request failed (${res.status})`);
-      }
+      if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error((b as any).error || `Request failed (${res.status})`); }
       const d = await res.json();
       setAiQuery(d.query ?? prompt.trim());
       setResults(d.leads ?? []);
@@ -126,16 +126,33 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
     finally { setLoading(false); }
   }
 
+  async function searchGitHub() {
+    if (!ghQuery.trim() || !session?.access_token) { setError('You must be signed in.'); return; }
+    setLoading(true); resetResults();
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/leads/github-devs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: JSON.stringify({ query: ghQuery, limit }),
+      });
+      if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error((b as any).error || `Request failed (${res.status})`); }
+      const d = await res.json();
+      setResults(d.leads ?? []);
+    } catch (e: any) { setError(e.message || 'GitHub search failed'); }
+    finally { setLoading(false); }
+  }
+
   async function importLead(l: ApiLead) {
     const key = l.rawData.login || l.businessName;
     if (imported.has(key) || !workspaceId) return;
     const nameParts = apiLeadToName(l).split(' ');
+    const source = tab === 'github' ? 'GitHub Developers' : 'AI Discovery';
     const { data } = await supabase.from('leads').insert({
       workspace_id: workspaceId,
       first_name: nameParts[0] ?? '', last_name: nameParts.slice(1).join(' ') ?? '',
       email: l.email ?? null, company_name: apiLeadToCompany(l) || null,
       title: apiLeadToTitle(l) || null, score: l.score,
-      status: l.score >= 80 ? 'qualified' : 'new', source: 'AI Discovery',
+      status: l.score >= 80 ? 'qualified' : 'new', source,
       metadata: { avatar: l.rawData.avatar, website: l.website },
     }).select('id, first_name, last_name, email, company_name, title, score, status, source, created_at').single();
     if (data) {
@@ -143,7 +160,7 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
       onImport({ id: data.id, name: `${data.first_name} ${data.last_name}`.trim(),
         email: data.email ?? '', company: data.company_name ?? '', title: data.title ?? '',
         score: data.score, status: (data.status ?? 'new') as Lead['status'],
-        source: 'AI Discovery', createdAt: data.created_at, avatar: l.rawData.avatar });
+        source, createdAt: data.created_at, avatar: l.rawData.avatar });
     }
   }
 
@@ -154,30 +171,56 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
   }
 
   const notImported = results.filter(l => !imported.has(l.rawData.login || l.businessName));
+  const isGitHub = tab === 'github';
+  const activeQuery = isGitHub ? ghQuery : prompt;
+  const search = isGitHub ? searchGitHub : searchAI;
 
   return (
-    <Dialog open={open} onClose={onClose} title="Find Leads with AI"
-      description="Describe who you're looking for — AI optimizes and searches" size="xl" noPadding>
+    <Dialog open={open} onClose={onClose} title="Find Leads" size="xl" noPadding>
       <div className="flex flex-col flex-1 overflow-hidden">
+
+        {/* Source tabs */}
+        <div className="flex border-b border-border px-6 pt-1">
+          <button onClick={() => { setTab('ai'); resetResults(); }}
+            className={`flex items-center gap-1.5 py-2.5 px-1 mr-5 text-xs font-medium border-b-2 transition-colors ${tab === 'ai' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+            <Sparkles className="w-3.5 h-3.5" /> AI Search
+          </button>
+          <button onClick={() => { setTab('github'); resetResults(); }}
+            className={`flex items-center gap-1.5 py-2.5 px-1 mr-5 text-xs font-medium border-b-2 transition-colors ${tab === 'github' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+            <Github className="w-3.5 h-3.5" /> GitHub Developers
+          </button>
+        </div>
+
+        {/* Search input area */}
         <div className="p-6 space-y-3 border-b border-border">
-          <textarea value={prompt} onChange={e => setPrompt(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) search(); }}
-            placeholder={'e.g. "SaaS founders raising Series A"\nor "CTOs at B2B fintech startups"'}
-            rows={3}
-            className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none transition-colors"
-          />
+          {isGitHub ? (
+            <input
+              value={ghQuery}
+              onChange={e => setGhQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') search(); }}
+              placeholder='e.g. "Python machine learning senior developer" or "Rust systems engineer"'
+              className="w-full h-10 bg-background border border-border rounded-lg px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            />
+          ) : (
+            <textarea value={prompt} onChange={e => setPrompt(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) search(); }}
+              placeholder={'e.g. "SaaS founders raising Series A"\nor "CTOs at B2B fintech startups"'}
+              rows={3}
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none transition-colors"
+            />
+          )}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
-              AI refines your prompt to find best-match contacts
-              {aiQuery && aiQuery !== prompt && <span className="text-primary font-medium">· "{aiQuery}"</span>}
+              {isGitHub
+                ? <><Github className="w-3.5 h-3.5 text-foreground" /> Searches GitHub users by any query — tech, role, or domain</>
+                : <><Sparkles className="w-3.5 h-3.5 text-primary" /> AI refines your prompt to find best-match contacts{aiQuery && aiQuery !== prompt && <span className="text-primary font-medium"> · "{aiQuery}"</span>}</>}
             </div>
             <div className="flex items-center gap-2">
               <select value={limit} onChange={e => setLimit(Number(e.target.value))}
                 className="text-xs border border-border rounded-md px-2 py-1.5 bg-background">
-                {[10, 20, 50].map(n => <option key={n} value={n}>{n} results</option>)}
+                {[10, 20, 30].map(n => <option key={n} value={n}>{n} results</option>)}
               </select>
-              <Button onClick={search} disabled={loading || !prompt.trim()} size="sm"
+              <Button onClick={search} disabled={loading || !activeQuery.trim()} size="sm"
                 icon={loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}>
                 {loading ? 'Searching…' : 'Search'}
               </Button>
@@ -186,11 +229,12 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
           {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
 
+        {/* Results */}
         <div className="flex-1 overflow-y-auto">
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-muted-foreground">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              <p className="text-sm">Searching for matching leads…</p>
+              <p className="text-sm">{isGitHub ? 'Mining GitHub profiles and emails…' : 'Searching for matching leads…'}</p>
             </div>
           )}
           {!loading && results.length > 0 && (
@@ -216,11 +260,15 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="text-sm font-medium">{apiLeadToName(l)}</p>
+                          {l.rawData.login && <span className="text-xs text-muted-foreground">@{l.rawData.login}</span>}
                           {l.email && <span className="text-xs text-muted-foreground">{l.email}</span>}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground flex-wrap">
                           {apiLeadToCompany(l) && <span>{apiLeadToCompany(l)}</span>}
                           {apiLeadToTitle(l) && <><span>·</span><span className="truncate max-w-xs">{apiLeadToTitle(l)}</span></>}
+                          {(l.rawData as any).matchingSkills?.length > 0 && (
+                            <><span>·</span><span className="text-primary">{((l.rawData as any).matchingSkills as string[]).slice(0, 3).join(', ')}</span></>
+                          )}
                           {l.website && <><span>·</span>
                             <a href={l.website} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
                               className="text-primary hover:underline truncate max-w-[200px]">
@@ -248,11 +296,9 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
           )}
           {!loading && results.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-muted-foreground gap-3">
-              <Sparkles className="w-8 h-8 opacity-20" />
-              <p className="text-sm font-medium">Describe your ideal lead above</p>
-              <p className="text-xs text-center max-w-xs">
-                Try "startup founders in fintech", "CTOs at Series B companies", or "growth marketers in SaaS"
-              </p>
+              {isGitHub
+                ? <><Github className="w-8 h-8 opacity-20" /><p className="text-sm font-medium">Search GitHub developers</p><p className="text-xs text-center max-w-xs">Try "TypeScript React senior developer", "Python ML engineer", or "Rust systems programmer"</p></>
+                : <><Sparkles className="w-8 h-8 opacity-20" /><p className="text-sm font-medium">Describe your ideal lead above</p><p className="text-xs text-center max-w-xs">Try "startup founders in fintech", "CTOs at Series B companies", or "growth marketers in SaaS"</p></>}
             </div>
           )}
         </div>
