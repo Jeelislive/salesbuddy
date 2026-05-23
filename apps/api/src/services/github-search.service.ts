@@ -183,7 +183,7 @@ export async function ghMineEmail(login: string, profile: any): Promise<{ email:
   return { email: null, source: null };
 }
 
-export async function scrapeGithubDevs(query: string, limit: number): Promise<ScrapedLead[]> {
+export async function scrapeGithubDevs(query: string, limit: number, startPage = 1): Promise<ScrapedLead[]> {
   const langs = extractLangsFromQuery(query);
   const { level, years } = extractLevelFromQuery(query);
   const tier = ghUserTier(level, years);
@@ -191,9 +191,9 @@ export async function scrapeGithubDevs(query: string, limit: number): Promise<Sc
 
   const seen = new Set<string>();
   const results: any[] = [];
-  const MAX_PAGES = 10;
+  const MAX_PAGES = startPage + 15;
 
-  for (let page = 1; page <= MAX_PAGES && results.length < limit; page++) {
+  for (let page = startPage; page <= MAX_PAGES && results.length < limit; page++) {
     const candidates = await ghFlexSearch(query, langs, expFilter, page);
     const fresh = candidates.filter(u => !seen.has(u.login));
     if (fresh.length === 0) break;

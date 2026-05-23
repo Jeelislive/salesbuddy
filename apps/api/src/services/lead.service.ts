@@ -6,7 +6,15 @@ export async function findAndImportGithubLeads(
   query: string,
   limit: number,
 ): Promise<{ found: number; inserted: number }> {
-  const found = await scrapeGithubDevs(query, limit);
+  // Start past already-imported pages so we find fresh users each run
+  const { count: existingCount } = await db.from('leads')
+    .select('*', { count: 'exact', head: true })
+    .eq('workspace_id', workspaceId)
+    .eq('source', 'AI Agent')
+    .is('deleted_at', null);
+  const startPage = Math.max(1, Math.floor((existingCount ?? 0) / limit) + 1);
+
+  const found = await scrapeGithubDevs(query, limit, startPage);
 
   const { data: existing } = await db.from('leads')
     .select('email, metadata')
