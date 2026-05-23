@@ -234,6 +234,7 @@ export function AgentPage() {
       const res = await fetch(`${API}/api/v1/agents/${agent.id}/run`, {
         method: 'POST',
         headers: headers(),
+        body: '{}',
       });
       const data = await res.json();
       if (!res.ok) { toast(data.error ?? 'Run failed', 'error'); return; }
