@@ -299,6 +299,9 @@ function AIGenerateModal({ open, onClose, onCreated }: {
 }
 
 /* ─── Enroll Leads Modal ─────────────────────────────────────── */
+type EnrollLead = { id: string; name: string; email: string | null; sentCount: number };
+type MailFilter = 'all' | 'none' | '1+' | '2+';
+
 function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
   open: boolean; onClose: () => void;
   sequence: Sequence | null; onEnrolled: () => void;
@@ -306,10 +309,11 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
   const { session } = useAuthStore();
   const { workspaceId } = useWorkspaceStore();
   const { toast } = useToast();
-  const [leads, setLeads] = useState<{ id: string; name: string; email: string | null }[]>([]);
+  const [leads, setLeads] = useState<EnrollLead[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
+  const [mailFilter, setMailFilter] = useState<MailFilter>('all');
 
   useEffect(() => {
     if (!open || !workspaceId || !sequence) return;
@@ -329,16 +333,39 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
         .select('contact_id')
         .eq('sequence_id', sequence.id)
         .eq('status', 'active'),
-    ]).then(([{ data: leadsData }, { data: enrolledData }]) => {
+      supabase
+        .from('email_logs')
+        .select('contact_id')
+        .eq('workspace_id', workspaceId)
+        .eq('status', 'sent'),
+    ]).then(([{ data: leadsData }, { data: enrolledData }, { data: logsData }]) => {
       const enrolledIds = new Set((enrolledData ?? []).map((e: any) => e.contact_id));
+      const sentCounts: Record<string, number> = {};
+      for (const log of logsData ?? []) {
+        sentCounts[log.contact_id] = (sentCounts[log.contact_id] ?? 0) + 1;
+      }
       setLeads(
         (leadsData ?? [])
           .filter((l: any) => !enrolledIds.has(l.id))
-          .map((l: any) => ({ id: l.id, name: l.name || 'Unknown', email: l.email }))
+          .map((l: any) => ({ id: l.id, name: l.name || 'Unknown', email: l.email, sentCount: sentCounts[l.id] ?? 0 }))
       );
       setLoadingLeads(false);
     });
   }, [open, workspaceId, sequence]);
+
+  const FILTERS: { key: MailFilter; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'none', label: 'Not contacted' },
+    { key: '1+', label: '1+ sent' },
+    { key: '2+', label: '2+ sent' },
+  ];
+
+  const filtered = leads.filter(l => {
+    if (mailFilter === 'none') return l.sentCount === 0;
+    if (mailFilter === '1+') return l.sentCount >= 1;
+    if (mailFilter === '2+') return l.sentCount >= 2;
+    return true;
+  });
 
   function toggle(id: string) {
     setSelected(prev => {
@@ -368,14 +395,28 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
   return (
     <Dialog open={open} onClose={onClose} title={`Enroll Leads — ${sequence?.name ?? ''}`} size="lg" noPadding>
       <div className="flex flex-col h-full">
-        <div className="px-6 py-3 border-b border-border flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+        {/* Filter tabs */}
+        <div className="px-6 pt-3 pb-0 flex items-center gap-1 border-b border-border">
+          {FILTERS.map(f => (
+            <button key={f.key} onClick={() => setMailFilter(f.key)}
+              className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${mailFilter === f.key ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              {f.label}
+              <span className="ml-1 text-muted-foreground">
+                ({leads.filter(l => f.key === 'all' ? true : f.key === 'none' ? l.sentCount === 0 : f.key === '1+' ? l.sentCount >= 1 : l.sentCount >= 2).length})
+              </span>
+            </button>
+          ))}
+          <div className="flex-1" />
           <button
-            className="text-xs text-primary hover:underline"
-            onClick={() => setSelected(leads.length === selected.size ? new Set() : new Set(leads.map(l => l.id)))}
+            className="text-xs text-primary hover:underline pb-2"
+            onClick={() => setSelected(filtered.length === selected.size ? new Set() : new Set(filtered.map(l => l.id)))}
           >
-            {selected.size === leads.length ? 'Deselect all' : 'Select all'}
+            {selected.size === filtered.length && filtered.length > 0 ? 'Deselect all' : 'Select all'}
           </button>
+        </div>
+
+        <div className="px-6 py-2 border-b border-border">
+          <span className="text-xs text-muted-foreground">{selected.size} selected</span>
         </div>
 
         <div className="flex-1 overflow-y-auto divide-y divide-border">
@@ -383,13 +424,12 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
-          ) : leads.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Users className="w-8 h-8 opacity-20 mb-2" />
-              <p className="text-sm">No verified leads found.</p>
-              <p className="text-xs text-muted-foreground">Run email verification first to validate lead emails.</p>
+              <p className="text-sm">No leads match this filter.</p>
             </div>
-          ) : leads.map(lead => (
+          ) : filtered.map(lead => (
             <button
               key={lead.id}
               onClick={() => toggle(lead.id)}
@@ -402,6 +442,11 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
                 <p className="text-sm font-medium truncate">{lead.name}</p>
                 {lead.email && <p className="text-xs text-muted-foreground truncate">{lead.email}</p>}
               </div>
+              {lead.sentCount > 0 && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary flex-shrink-0">
+                  {lead.sentCount} sent
+                </span>
+              )}
             </button>
           ))}
         </div>
