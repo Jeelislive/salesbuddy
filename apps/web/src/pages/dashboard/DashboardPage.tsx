@@ -84,8 +84,8 @@ export function DashboardPage() {
           .eq('workspace_id', workspaceId).is('deleted_at', null),
         supabase.from('deals').select('amount, created_at')
           .eq('workspace_id', workspaceId).is('deleted_at', null),
-        supabase.from('activities').select('*', { count: 'exact', head: true })
-          .eq('workspace_id', workspaceId).eq('type', 'email'),
+        supabase.from('email_logs').select('*', { count: 'exact', head: true })
+          .eq('workspace_id', workspaceId).eq('status', 'sent'),
         supabase.from('leads').select('id, first_name, last_name, company_name, title, score, status')
           .eq('workspace_id', workspaceId).is('deleted_at', null)
           .order('score', { ascending: false }).limit(5),
