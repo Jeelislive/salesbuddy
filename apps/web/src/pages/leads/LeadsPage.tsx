@@ -726,6 +726,7 @@ export function LeadsPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/leads/verify-emails`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+        body: '{}',
       });
       const body = await res.json();
       if (!res.ok) {
