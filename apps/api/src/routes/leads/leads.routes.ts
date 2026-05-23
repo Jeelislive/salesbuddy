@@ -149,8 +149,8 @@ async function ghFlexSearch(userQuery: string, langs: string[], expFilter: strin
   return candidates.slice(0, 50);
 }
 
-async function ghFetchProfiles(candidates: any[]): Promise<any[]> {
-  const top = candidates.slice(0, 15);
+async function ghFetchProfiles(candidates: any[], limit = 20): Promise<any[]> {
+  const top = candidates.slice(0, Math.min(limit * 2, 40));
   const profiles = await Promise.all(
     top.map((u) =>
       fetch(`https://api.github.com/users/${u.login}`, { headers: ghHeaders() })
@@ -236,10 +236,20 @@ async function scrapeGithubDevs(query: string, limit: number): Promise<any[]> {
   const { level, years } = extractLevelFromQuery(query);
   const tier = ghUserTier(level, years);
   const expFilter = ghExperienceQuery(tier);
-  const randomPage = Math.floor(Math.random() * 8) + 1;
+  // Fetch 2 pages in parallel for more candidate variety
+  const page1 = 1;
+  const page2 = Math.floor(Math.random() * 5) + 2;
+  const [batch1, batch2] = await Promise.all([
+    ghFlexSearch(query, langs, expFilter, page1),
+    ghFlexSearch(query, langs, expFilter, page2),
+  ]);
+  const seen = new Set<string>();
+  const candidates: any[] = [];
+  for (const u of [...batch1, ...batch2]) {
+    if (!seen.has(u.login)) { seen.add(u.login); candidates.push(u); }
+  }
 
-  const candidates = await ghFlexSearch(query, langs, expFilter, randomPage);
-  const profiles = await ghFetchProfiles(candidates);
+  const profiles = await ghFetchProfiles(candidates, limit);
   const scored = ghScoreProfiles(profiles, query, langs, tier);
 
   const enriched = await Promise.all(
