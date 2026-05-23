@@ -5,7 +5,7 @@ import { LeadRepository } from '@salesbuddy/db';
 import { enrichmentQueue } from '@salesbuddy/queue';
 import { anthropic } from '@salesbuddy/ai';
 
-const LEAD_SCRAPER_API = 'https://leadapi-y92c.onrender.com/api/scrapers/leads';
+const LEAD_SCRAPER_BASE = 'https://leadapi-y92c.onrender.com/api/scrapers';
 
 import { scrapeGithubDevs, ghMineEmail, isEmailValid } from '../../services/github-search.service';
 
@@ -115,34 +115,60 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       let searchQuery = prompt.trim();
+      let searchLocation = '';
 
       if (process.env.ANTHROPIC_API_KEY) {
         try {
-          
           const msg = await anthropic.messages.create({
             model: 'claude-haiku-4-5-20251001',
-            max_tokens: 60,
+            max_tokens: 80,
             system:
-              'Extract a concise search query (2-6 keywords) from the user\'s lead generation request. ' +
-              'The query will search GitHub profiles, Reddit users, and Product Hunt makers. ' +
-              'Output ONLY the keywords, no explanation.',
+              'Extract the search intent from a lead generation request. ' +
+              'Output ONLY valid JSON with two fields: ' +
+              '"query" (2-6 keywords describing what to search, e.g. "pizza restaurant", "react developer freelance", "saas startup founder") ' +
+              'and "location" (city/country if mentioned, else empty string). ' +
+              'Example: {"query":"pizza shop","location":"London"}',
             messages: [{ role: 'user', content: prompt }],
           });
           const text = (msg.content[0] as any)?.text?.trim();
-          if (text) searchQuery = text;
+          if (text) {
+            const parsed = JSON.parse(text);
+            if (parsed.query) searchQuery = parsed.query;
+            if (parsed.location) searchLocation = parsed.location;
+          }
         } catch { /* fall back to original prompt */ }
       }
 
       try {
         const cap = Math.min(Number(limit) || 10, 30);
-        const res = await fetch(`${LEAD_SCRAPER_API}?query=${encodeURIComponent(searchQuery)}&limit=${cap}`);
+        const params = new URLSearchParams({ query: searchQuery, limit: String(cap) });
+        if (searchLocation) params.set('location', searchLocation);
+        const res = await fetch(`${LEAD_SCRAPER_BASE}/all?${params.toString()}`);
         if (!res.ok) throw new Error(`upstream ${res.status}`);
-        const data = await res.json() as { leads?: any[] };
-        const rawLeads = data.leads ?? [];
+
+        // /all returns ScrapedResult[] — flatten to a single leads array
+        const data = await res.json() as Array<{ leads?: any[] }>;
+        const rawLeads = Array.isArray(data)
+          ? data.flatMap(r => r.leads ?? [])
+          : (data as any).leads ?? [];
+
+        // Deduplicate by email then name
+        const seenEmail = new Set<string>();
+        const seenName = new Set<string>();
+        const dedupedLeads: any[] = [];
+        for (const lead of rawLeads) {
+          const ek = lead.email?.toLowerCase().trim();
+          const nk = lead.businessName?.toLowerCase().trim();
+          if (ek && seenEmail.has(ek)) continue;
+          if (!ek && nk && seenName.has(nk)) continue;
+          if (ek) seenEmail.add(ek);
+          if (nk) seenName.add(nk);
+          dedupedLeads.push(lead);
+        }
 
         // For leads without email that have a GitHub login, mine email from commits
         const enriched = await Promise.all(
-          rawLeads.map(async (lead: any) => {
+          dedupedLeads.slice(0, cap).map(async (lead: any) => {
             if (lead.email) return lead;
             const login = lead.rawData?.login;
             if (!login) return lead;
@@ -151,7 +177,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
           }),
         );
 
-        return reply.send({ query: searchQuery, leads: enriched });
+        return reply.send({ query: searchQuery, location: searchLocation, leads: enriched });
       } catch (err) {
         fastify.log.error(err);
         return reply.status(502).send({ error: 'Lead search failed' });
