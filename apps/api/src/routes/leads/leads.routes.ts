@@ -15,7 +15,10 @@ async function isEmailValid(email: string): Promise<boolean> {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
   const domain = email.split('@')[1];
   try {
-    const records = await dns.resolveMx(domain);
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('DNS timeout')), 5000),
+    );
+    const records = await Promise.race([dns.resolveMx(domain), timeout]);
     return records.length > 0;
   } catch {
     return false;
@@ -396,14 +399,27 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
       }
 
       try {
-        const cap = Math.min(Number(limit) || 10, 50);
+        const cap = Math.min(Number(limit) || 10, 30);
         const res = await fetch(`${LEAD_SCRAPER_API}?query=${encodeURIComponent(searchQuery)}&limit=${cap}`);
         if (!res.ok) throw new Error(`upstream ${res.status}`);
-        const data = await res.json() as { leads?: unknown[] };
-        return reply.send({ query: searchQuery, leads: data.leads ?? [] });
+        const data = await res.json() as { leads?: any[] };
+        const rawLeads = data.leads ?? [];
+
+        // For leads without email that have a GitHub login, mine email from commits
+        const enriched = await Promise.all(
+          rawLeads.map(async (lead: any) => {
+            if (lead.email) return lead;
+            const login = lead.rawData?.login;
+            if (!login) return lead;
+            const { email } = await ghMineEmail(login, lead.rawData ?? {});
+            return email ? { ...lead, email } : lead;
+          }),
+        );
+
+        return reply.send({ query: searchQuery, leads: enriched });
       } catch (err) {
         fastify.log.error(err);
-        return reply.status(502).send({ error: 'Failed to fetch leads from external source' });
+        return reply.status(502).send({ error: 'Lead search failed' });
       }
     },
   );
@@ -428,13 +444,18 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
       if (error) return reply.status(500).send({ error: 'DB query failed' });
 
       let valid = 0, invalid = 0;
-      for (const lead of leads ?? []) {
-        const ok = await isEmailValid(lead.email);
-        await db.from('leads').update({ email_status: ok ? 'valid' : 'invalid' }).eq('id', lead.id);
-        ok ? valid++ : invalid++;
+      const batch = leads ?? [];
+      const CONCURRENCY = 10;
+      for (let i = 0; i < batch.length; i += CONCURRENCY) {
+        const chunk = batch.slice(i, i + CONCURRENCY);
+        await Promise.all(chunk.map(async (lead) => {
+          const ok = await isEmailValid(lead.email);
+          await db.from('leads').update({ email_status: ok ? 'valid' : 'invalid' }).eq('id', lead.id);
+          ok ? valid++ : invalid++;
+        }));
       }
 
-      return reply.send({ valid, invalid, total: (leads ?? []).length });
+      return reply.send({ valid, invalid, total: batch.length });
     },
   );
 

@@ -727,10 +727,19 @@ export function LeadsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
       });
-      const { valid = 0, invalid = 0, total = 0 } = await res.json();
-      toast(`Verified ${total} emails — ${valid} valid, ${invalid} invalid`, 'success');
+      const body = await res.json();
+      if (!res.ok) {
+        toast(body?.error || `Verification failed (${res.status})`, 'error');
+        return;
+      }
+      const { valid = 0, invalid = 0, total = 0 } = body;
+      if (total === 0) {
+        toast('No unverified emails found — all leads are already verified', 'info');
+      } else {
+        toast(`Verified ${total} emails — ${valid} valid, ${invalid} invalid`, 'success');
+      }
       await loadLeads();
-    } catch { toast('Verification failed', 'error'); }
+    } catch (e: any) { toast(e?.message || 'Verification failed', 'error'); }
     finally { setVerifying(false); }
   }
 

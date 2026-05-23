@@ -7,7 +7,10 @@ async function isEmailValid(email: string): Promise<boolean> {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
   const domain = email.split('@')[1];
   try {
-    const records = await dns.resolveMx(domain);
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('DNS timeout')), 5000),
+    );
+    const records = await Promise.race([dns.resolveMx(domain), timeout]);
     return records.length > 0;
   } catch {
     return false;
@@ -49,8 +52,8 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
     let processed = 0, failed = 0, skipped = 0;
 
     for (const enrollment of enrollments ?? []) {
-      const contact = enrollment.contact as any;
-      const sequence = enrollment.sequence as any;
+      const contact = Array.isArray(enrollment.contact) ? enrollment.contact[0] : enrollment.contact as any;
+      const sequence = Array.isArray(enrollment.sequence) ? enrollment.sequence[0] : enrollment.sequence as any;
 
       if (!contact?.email) { skipped++; continue; }
 
@@ -153,14 +156,18 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     let valid = 0, invalid = 0;
-
-    for (const lead of leads ?? []) {
-      const ok = await isEmailValid(lead.email);
-      await db.from('leads').update({ email_status: ok ? 'valid' : 'invalid' }).eq('id', lead.id);
-      ok ? valid++ : invalid++;
+    const batch = leads ?? [];
+    const CONCURRENCY = 10;
+    for (let i = 0; i < batch.length; i += CONCURRENCY) {
+      const chunk = batch.slice(i, i + CONCURRENCY);
+      await Promise.all(chunk.map(async (lead) => {
+        const ok = await isEmailValid(lead.email);
+        await db.from('leads').update({ email_status: ok ? 'valid' : 'invalid' }).eq('id', lead.id);
+        ok ? valid++ : invalid++;
+      }));
     }
 
     fastify.log.info({ valid, invalid }, 'Cron: email verification done');
-    return reply.send({ valid, invalid, total: (leads ?? []).length });
+    return reply.send({ valid, invalid, total: batch.length });
   });
 };
