@@ -329,9 +329,8 @@ export function AgentPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                    ICP Query <span className="text-muted-foreground/60">(who to find)</span>
-                  </label>
+                  <label className="text-xs font-medium text-muted-foreground mb-0.5 block">ICP Query</label>
+                  <p className="text-xs text-muted-foreground mb-1">Describe who the agent should find — used to search GitHub for matching developers.</p>
                   <Input
                     value={form.icp_query}
                     onChange={e => setForm(f => ({ ...f, icp_query: e.target.value }))}
@@ -340,7 +339,8 @@ export function AgentPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Target Sequence</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-0.5 block">Target Sequence</label>
+                  <p className="text-xs text-muted-foreground mb-1">Qualified leads will be auto-enrolled into this email sequence.</p>
                   <select
                     value={form.target_sequence_id}
                     onChange={e => setForm(f => ({ ...f, target_sequence_id: e.target.value }))}
@@ -355,7 +355,8 @@ export function AgentPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Leads per run</label>
+                    <label className="text-xs font-medium text-muted-foreground mb-0.5 block">Leads per run</label>
+                    <p className="text-xs text-muted-foreground mb-1">Max new leads to fetch each time the agent runs (1–50).</p>
                     <Input
                       type="number"
                       min={1} max={50}
@@ -364,7 +365,8 @@ export function AgentPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Min lead score</label>
+                    <label className="text-xs font-medium text-muted-foreground mb-0.5 block">Min lead score</label>
+                    <p className="text-xs text-muted-foreground mb-1">Only enroll leads with a score at or above this threshold (0–100).</p>
                     <Input
                       type="number"
                       min={0} max={100}
@@ -389,21 +391,32 @@ export function AgentPage() {
                   <ListChecks className="w-4 h-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold text-foreground">Permissions</h3>
                 </div>
-                <Toggle
-                  label="Find new leads from GitHub"
-                  checked={form.can_find_leads}
-                  onChange={v => setForm(f => ({ ...f, can_find_leads: v }))}
-                />
-                <Toggle
-                  label="Verify lead emails"
-                  checked={form.can_verify_emails}
-                  onChange={v => setForm(f => ({ ...f, can_verify_emails: v }))}
-                />
-                <Toggle
-                  label="Auto-enroll leads into sequence"
-                  checked={form.can_enroll_leads}
-                  onChange={v => setForm(f => ({ ...f, can_enroll_leads: v }))}
-                />
+                <div className="space-y-3">
+                  <div>
+                    <Toggle
+                      label="Find new leads from GitHub"
+                      checked={form.can_find_leads}
+                      onChange={v => setForm(f => ({ ...f, can_find_leads: v }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-0.5 ml-0">Searches GitHub for developers matching your ICP query and imports them as leads.</p>
+                  </div>
+                  <div>
+                    <Toggle
+                      label="Verify lead emails"
+                      checked={form.can_verify_emails}
+                      onChange={v => setForm(f => ({ ...f, can_verify_emails: v }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-0.5">Checks DNS MX records to confirm each email address is deliverable before outreach.</p>
+                  </div>
+                  <div>
+                    <Toggle
+                      label="Auto-enroll leads into sequence"
+                      checked={form.can_enroll_leads}
+                      onChange={v => setForm(f => ({ ...f, can_enroll_leads: v }))}
+                    />
+                    <p className="text-xs text-muted-foreground mt-0.5">Automatically enrolls verified leads that meet the min score into the target sequence.</p>
+                  </div>
+                </div>
                 <div className="flex justify-end pt-1">
                   <Button size="sm" onClick={saveAgent} loading={saving}>
                     Save Changes
