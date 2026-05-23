@@ -511,10 +511,10 @@ export function AgentPage() {
                 No activity yet — run the agent to see logs here.
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="overflow-y-auto" style={{ maxHeight: 400 }}>
                 {logs.map(log => (
-                  <div key={log.id} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
-                    <div className="mt-0.5">{ACTION_ICON[log.action] ?? <Bot className="w-4 h-4 text-muted-foreground" />}</div>
+                  <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
+                    <div className="mt-0.5 flex-shrink-0">{ACTION_ICON[log.action] ?? <Bot className="w-4 h-4 text-muted-foreground" />}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <StatusIcon status={log.status} />
@@ -526,7 +526,7 @@ export function AgentPage() {
                         </p>
                       )}
                     </div>
-                    <span className="text-xs text-muted-foreground flex-shrink-0 mt-0.5">
+                    <span className="text-xs text-muted-foreground flex-shrink-0 mt-0.5 ml-2">
                       {timeAgo(log.created_at)}
                     </span>
                   </div>
