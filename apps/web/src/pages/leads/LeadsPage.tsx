@@ -3,7 +3,7 @@ import {
   Search, Plus, Filter, Download, Sparkles, MoreHorizontal,
   Loader2, UserPlus, CheckCircle, X, ChevronDown, Trash2,
   Upload, FileText, AlertTriangle, Mail, Globe, Tag, Calendar, Building, ExternalLink, Github,
-  ShieldCheck, ShieldX, ShieldQuestion,
+  ShieldCheck, ShieldX, ShieldQuestion, Phone,
 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
@@ -24,11 +24,11 @@ interface Lead {
   title: string; score: number;
   status: 'qualified' | 'contacted' | 'new' | 'disqualified';
   source: string; createdAt: string; avatar?: string; website?: string;
-  emailStatus?: EmailStatus;
+  phone?: string; emailStatus?: EmailStatus;
 }
 
 interface ApiLead {
-  businessName: string; email?: string; website?: string; score: number;
+  businessName: string; email?: string; phone?: string; website?: string; score: number;
   rawData: { avatar?: string; company?: string; bio?: string; login?: string; twitter?: string; producthuntUrl?: string; redditUrl?: string };
   socialLinks?: Record<string, string>;
 }
@@ -178,23 +178,72 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
     const { data } = await supabase.from('leads').insert({
       workspace_id: workspaceId,
       first_name: nameParts[0] ?? '', last_name: nameParts.slice(1).join(' ') ?? '',
-      email: l.email ?? null, company_name: apiLeadToCompany(l) || null,
+      email: l.email ?? null, phone: l.phone ?? null,
+      company_name: apiLeadToCompany(l) || null,
       title: apiLeadToTitle(l) || null, score: l.score,
       status: l.score >= 80 ? 'qualified' : 'new', source,
       metadata: { avatar: l.rawData.avatar, website: l.website, login: l.rawData.login },
-    }).select('id, first_name, last_name, email, company_name, title, score, status, source, created_at').single();
+    }).select('id, first_name, last_name, email, phone, company_name, title, score, status, source, created_at').single();
     if (data) {
       setImported(prev => new Set([...prev, key]));
       onImport({ id: data.id, name: `${data.first_name} ${data.last_name}`.trim(),
-        email: data.email ?? '', company: data.company_name ?? '', title: data.title ?? '',
+        email: data.email ?? '', phone: data.phone ?? undefined,
+        company: data.company_name ?? '', title: data.title ?? '',
         score: data.score, status: (data.status ?? 'new') as Lead['status'],
         source, createdAt: data.created_at, avatar: l.rawData.avatar });
     }
   }
 
   async function importAll() {
+    const toImport = results.filter(l => !imported.has(leadKey(l)));
+    if (!toImport.length || !workspaceId) return;
     setImportingAll(true);
-    for (const l of results) await importLead(l);
+
+    const source = tab === 'github' ? 'GitHub Developers' : 'AI Discovery';
+    const rows = toImport.map(l => {
+      const nameParts = apiLeadToName(l).split(' ');
+      return {
+        workspace_id: workspaceId,
+        first_name: nameParts[0] ?? '',
+        last_name: nameParts.slice(1).join(' ') ?? '',
+        email: l.email ?? null,
+        phone: l.phone ?? null,
+        company_name: apiLeadToCompany(l) || null,
+        title: apiLeadToTitle(l) || null,
+        score: l.score,
+        status: l.score >= 80 ? 'qualified' : 'new',
+        source,
+        metadata: { avatar: l.rawData?.avatar, website: l.website, login: l.rawData?.login },
+      };
+    });
+
+    const { data } = await supabase
+      .from('leads')
+      .insert(rows)
+      .select('id, first_name, last_name, email, phone, company_name, title, score, status, source, created_at');
+
+    if (data) {
+      const newImported = new Set([...imported]);
+      data.forEach((d, i) => {
+        const l = toImport[i];
+        newImported.add(leadKey(l));
+        onImport({
+          id: d.id,
+          name: `${d.first_name} ${d.last_name}`.trim(),
+          email: d.email ?? '',
+          phone: d.phone ?? undefined,
+          company: d.company_name ?? '',
+          title: d.title ?? '',
+          score: d.score,
+          status: (d.status ?? 'new') as Lead['status'],
+          source,
+          createdAt: d.created_at,
+          avatar: l.rawData?.avatar,
+        });
+      });
+      setImported(newImported);
+    }
+
     setImportingAll(false);
   }
 
@@ -341,7 +390,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
   onAdd: (leads: Lead[]) => void; workspaceId: string | null;
 }) {
   const [tab, setTab]     = useState<'manual' | 'csv'>('manual');
-  const [form, setForm]   = useState({ first_name: '', last_name: '', email: '', company_name: '', title: '', status: 'new' });
+  const [form, setForm]   = useState({ first_name: '', last_name: '', email: '', phone: '', company_name: '', title: '', status: 'new' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -352,7 +401,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
   const fileRef = useRef<HTMLInputElement>(null);
 
   function reset() {
-    setForm({ first_name: '', last_name: '', email: '', company_name: '', title: '', status: 'new' });
+    setForm({ first_name: '', last_name: '', email: '', phone: '', company_name: '', title: '', status: 'new' });
     setCsvRows([]); setCsvFile(null); setError('');
   }
 
@@ -361,13 +410,15 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
     setSaving(true); setError('');
     const { data, error: err } = await supabase.from('leads').insert({
       workspace_id: workspaceId, first_name: form.first_name.trim(), last_name: form.last_name.trim(),
-      email: form.email.trim() || null, company_name: form.company_name.trim() || null,
+      email: form.email.trim() || null, phone: form.phone.trim() || null,
+      company_name: form.company_name.trim() || null,
       title: form.title.trim() || null, status: form.status, source: 'Manual', score: 0,
-    }).select('id, first_name, last_name, email, company_name, title, score, status, source, created_at').single();
+    }).select('id, first_name, last_name, email, phone, company_name, title, score, status, source, created_at').single();
     if (err) { setError(err.message); setSaving(false); return; }
     if (data) {
       onAdd([{ id: data.id, name: `${data.first_name} ${data.last_name}`.trim(),
-        email: data.email ?? '', company: data.company_name ?? '', title: data.title ?? '',
+        email: data.email ?? '', phone: (data as any).phone ?? undefined,
+        company: data.company_name ?? '', title: data.title ?? '',
         score: 0, status: (data.status ?? 'new') as Lead['status'], source: 'Manual', createdAt: data.created_at }]);
       reset(); onClose();
     }
@@ -445,6 +496,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
               {field('Last Name', 'last_name', 'text', 'Doe')}
             </div>
             {field('Email *', 'email', 'email', 'john@company.com')}
+            {field('Phone', 'phone', 'tel', '+1 555 123 4567')}
             {field('Company', 'company_name', 'text', 'Acme Inc.')}
             {field('Job Title', 'title', 'text', 'VP Engineering')}
             <div className="space-y-1">
@@ -567,6 +619,12 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead | null; onClose: () => 
               <a href={`mailto:${lead.email}`} className="text-sm text-primary hover:underline break-all">{lead.email}</a>
             </div>
           )}
+          {lead.phone && (
+            <div className="flex items-center gap-3">
+              <Phone className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <a href={`tel:${lead.phone}`} className="text-sm text-primary hover:underline">{lead.phone}</a>
+            </div>
+          )}
           {lead.company && lead.company !== '-' && (
             <div className="flex items-center gap-3">
               <Building className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -641,12 +699,13 @@ export function LeadsPage() {
     setDbLoading(true);
     const { data } = await supabase
       .from('leads')
-      .select('id, first_name, last_name, email, company_name, title, score, status, source, created_at, metadata, email_status')
+      .select('id, first_name, last_name, email, phone, company_name, title, score, status, source, created_at, metadata, email_status')
       .eq('workspace_id', workspaceId).is('deleted_at', null)
       .order('created_at', { ascending: false });
     setLeads((data ?? []).map(l => ({
       id: l.id, name: `${l.first_name} ${l.last_name}`.trim() || '-',
-      email: l.email ?? '', company: l.company_name ?? '-', title: l.title ?? '',
+      email: l.email ?? '', phone: (l as any).phone ?? undefined,
+      company: l.company_name ?? '-', title: l.title ?? '',
       score: l.score ?? 0, status: (l.status ?? 'new') as Lead['status'],
       source: l.source ?? 'Manual', createdAt: l.created_at,
       avatar: (l.metadata as any)?.avatar,
