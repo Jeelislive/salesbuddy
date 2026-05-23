@@ -56,20 +56,25 @@ const ACTION_ICON: Record<string, React.ReactNode> = {
 
 function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
   return (
-    <label className="flex items-center justify-between gap-3 cursor-pointer">
+    <div className="flex items-center justify-between gap-3">
       <span className="text-sm text-foreground">{label}</span>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-10 h-5.5 rounded-full transition-colors focus:outline-none ${
-          checked ? 'bg-primary' : 'bg-muted'
-        }`}
+        style={{ width: 40, height: 22, borderRadius: 11, flexShrink: 0 }}
+        className={`relative transition-colors focus:outline-none ${checked ? 'bg-primary' : 'bg-border'}`}
       >
-        <span className={`absolute top-0.5 left-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform ${
-          checked ? 'translate-x-4.5' : 'translate-x-0'
-        }`} style={{ width: '18px', height: '18px' }} />
+        <span
+          style={{
+            position: 'absolute', top: 2, left: 2,
+            width: 18, height: 18, borderRadius: '50%',
+            background: 'white', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            transition: 'transform 0.15s',
+            transform: checked ? 'translateX(18px)' : 'translateX(0)',
+          }}
+        />
       </button>
-    </label>
+    </div>
   );
 }
 
