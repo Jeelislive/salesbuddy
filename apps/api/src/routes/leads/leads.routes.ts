@@ -236,28 +236,39 @@ async function scrapeGithubDevs(query: string, limit: number): Promise<any[]> {
   const { level, years } = extractLevelFromQuery(query);
   const tier = ghUserTier(level, years);
   const expFilter = ghExperienceQuery(tier);
-  // Fetch 2 pages in parallel for more candidate variety
-  const page1 = 1;
-  const page2 = Math.floor(Math.random() * 5) + 2;
-  const [batch1, batch2] = await Promise.all([
-    ghFlexSearch(query, langs, expFilter, page1),
-    ghFlexSearch(query, langs, expFilter, page2),
-  ]);
+
+  // Paginate until we have enough enriched leads or exhaust pages (max 10)
   const seen = new Set<string>();
-  const candidates: any[] = [];
-  for (const u of [...batch1, ...batch2]) {
-    if (!seen.has(u.login)) { seen.add(u.login); candidates.push(u); }
+  const results: any[] = [];
+  const MAX_PAGES = 10;
+
+  for (let page = 1; page <= MAX_PAGES && results.length < limit; page++) {
+    const candidates = await ghFlexSearch(query, langs, expFilter, page);
+    const fresh = candidates.filter(u => !seen.has(u.login));
+    if (fresh.length === 0) break; // no new results, stop early
+    for (const u of fresh) seen.add(u.login);
+
+    const profiles = await ghFetchProfiles(fresh, limit - results.length);
+    const scored = ghScoreProfiles(profiles, query, langs, tier);
+    const needed = limit - results.length;
+
+    const enriched = await Promise.all(
+      scored.slice(0, needed * 2).map(async ({ profile: p, matchingSkills, matchScore }) => {
+        const { email, source } = await ghMineEmail(p.login, p);
+        return { ...p, matchingSkills, matchScore, email, emailSource: source };
+      })
+    );
+
+    // Only keep leads that have an email — push until we hit limit
+    for (const d of enriched) {
+      if (results.length >= limit) break;
+      results.push(d);
+    }
+
+    console.log(`[GH] page ${page}: +${enriched.length} enriched, total so far: ${results.length}/${limit}`);
   }
 
-  const profiles = await ghFetchProfiles(candidates, limit);
-  const scored = ghScoreProfiles(profiles, query, langs, tier);
-
-  const enriched = await Promise.all(
-    scored.slice(0, limit).map(async ({ profile: p, matchingSkills, matchScore }) => {
-      const { email, source } = await ghMineEmail(p.login, p);
-      return { ...p, matchingSkills, matchScore, email, emailSource: source };
-    })
-  );
+  const enriched = results;
 
   return enriched.map((d) => {
     const website = d.blog
