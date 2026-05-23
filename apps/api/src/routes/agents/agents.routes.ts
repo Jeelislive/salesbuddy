@@ -44,7 +44,7 @@ export async function runAgent(agentId: string): Promise<{ actions: string[] }> 
       for (const l of newLeads) {
         if (!l.email) continue;
         const nameParts = (l.businessName || '').trim().split(' ');
-        await db.from('leads').insert({
+        const { error: insertErr } = await db.from('leads').insert({
           workspace_id: agent.workspace_id,
           first_name: nameParts[0] || l.rawData.login,
           last_name: nameParts.slice(1).join(' ') || '',
@@ -58,7 +58,7 @@ export async function runAgent(agentId: string): Promise<{ actions: string[] }> 
           status: 'new',
           metadata: { login: l.rawData.login, avatar: l.rawData.avatar, githubUrl: l.rawData.githubUrl },
         });
-        inserted++;
+        if (!insertErr) inserted++;
       }
 
       await log('find_leads', 'success', `Found ${found.length} leads, imported ${inserted} new`, { found: found.length, inserted });
@@ -134,7 +134,7 @@ export async function runAgent(agentId: string): Promise<{ actions: string[] }> 
 
         let count = 0;
         for (const lead of toEnroll) {
-          await db.from('sequence_enrollments').insert({
+          const { error: enrollErr } = await db.from('sequence_enrollments').insert({
             workspace_id: agent.workspace_id,
             sequence_id: agent.target_sequence_id,
             contact_id: lead.id,
@@ -142,7 +142,7 @@ export async function runAgent(agentId: string): Promise<{ actions: string[] }> 
             current_step: 1,
             next_send_at: nextSendAt.toISOString(),
           });
-          count++;
+          if (!enrollErr) count++;
         }
 
         await log('enroll_leads', 'success', `Enrolled ${count} leads into sequence`, { enrolled: count });
