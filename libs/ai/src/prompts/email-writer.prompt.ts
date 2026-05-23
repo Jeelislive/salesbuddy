@@ -52,7 +52,8 @@ Each step object must have these fields:
   "delay_days": number (days to wait after previous step; step 1 = 0),
   "type": "email"
 }
-Write ${steps} steps. Tone: ${tone}. Be concise, value-driven, and avoid spam trigger words.`,
+Write ${steps} steps. Tone: ${tone}. Be concise, value-driven, and avoid spam trigger words.
+IMPORTANT: Do NOT include a signature, sign-off name, or any placeholder like [Your Name] or [Sender]. End each email body after the call-to-action.`,
   };
 
   const userMessage: Anthropic.MessageParam = {

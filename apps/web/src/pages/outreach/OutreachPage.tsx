@@ -260,14 +260,28 @@ function AIGenerateModal({ open, onClose, onCreated }: {
             <label className="text-xs font-medium text-muted-foreground">Sequence Name</label>
             <Input className="mt-1" value={sequenceName} onChange={e => setSequenceName(e.target.value)} />
           </div>
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
             {generatedSteps.map((s: any, i: number) => (
-              <div key={i} className="border border-border rounded-lg p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Step {i + 1} {i === 0 ? '(Day 0)' : `(+${s.delay_days || s.delay_hours ? `${s.delay_days}d` : '3d'})`}</span>
+              <div key={i} className="border border-border rounded-lg p-4 space-y-3">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Step {i + 1} {i === 0 ? '(Day 0)' : `(+${s.delay_days ?? 3}d)`}
+                </span>
+                <div>
+                  <label className="text-xs text-muted-foreground">Subject</label>
+                  <Input className="mt-1" value={s.subject ?? ''} onChange={e =>
+                    setGeneratedSteps(prev => prev.map((st, idx) => idx === i ? { ...st, subject: e.target.value } : st))
+                  } />
                 </div>
-                {s.subject && <p className="text-sm font-medium">{s.subject}</p>}
-                <p className="text-xs text-muted-foreground whitespace-pre-wrap">{s.body?.slice(0, 200)}{s.body?.length > 200 ? '…' : ''}</p>
+                <div>
+                  <label className="text-xs text-muted-foreground">Body — use {'{{first_name}}'} for personalization</label>
+                  <textarea
+                    className="mt-1 w-full h-40 px-3 py-2 text-sm bg-background border border-border rounded-lg resize-y focus:outline-none focus:ring-1 focus:ring-primary"
+                    value={s.body ?? ''}
+                    onChange={e =>
+                      setGeneratedSteps(prev => prev.map((st, idx) => idx === i ? { ...st, body: e.target.value } : st))
+                    }
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -298,22 +312,33 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
   const [enrolling, setEnrolling] = useState(false);
 
   useEffect(() => {
-    if (!open || !workspaceId) return;
+    if (!open || !workspaceId || !sequence) return;
     setLoadingLeads(true);
     setSelected(new Set());
-    supabase
-      .from('leads')
-      .select('id, name, email, email_status')
-      .eq('workspace_id', workspaceId)
-      .eq('email_status', 'valid')
-      .is('deleted_at', null)
-      .order('created_at', { ascending: false })
-      .limit(200)
-      .then(({ data }) => {
-        setLeads((data ?? []).map((l: any) => ({ id: l.id, name: l.name || 'Unknown', email: l.email })));
-        setLoadingLeads(false);
-      });
-  }, [open, workspaceId]);
+    Promise.all([
+      supabase
+        .from('leads')
+        .select('id, name, email')
+        .eq('workspace_id', workspaceId)
+        .eq('email_status', 'valid')
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+        .limit(200),
+      supabase
+        .from('sequence_enrollments')
+        .select('contact_id')
+        .eq('sequence_id', sequence.id)
+        .eq('status', 'active'),
+    ]).then(([{ data: leadsData }, { data: enrolledData }]) => {
+      const enrolledIds = new Set((enrolledData ?? []).map((e: any) => e.contact_id));
+      setLeads(
+        (leadsData ?? [])
+          .filter((l: any) => !enrolledIds.has(l.id))
+          .map((l: any) => ({ id: l.id, name: l.name || 'Unknown', email: l.email }))
+      );
+      setLoadingLeads(false);
+    });
+  }, [open, workspaceId, sequence]);
 
   function toggle(id: string) {
     setSelected(prev => {

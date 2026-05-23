@@ -81,9 +81,17 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
       try {
         const firstName = contact.first_name || contact.email.split('@')[0];
         const subject = (step.subject || '').replace(/\{\{first_name\}\}/gi, firstName);
-        const body = (step.body || '').replace(/\{\{first_name\}\}/gi, firstName);
+        const rawBody = (step.body || '')
+          .replace(/\{\{first_name\}\}/gi, firstName)
+          .replace(/\[Your Name\]/gi, '')
+          .replace(/\[Sender\]/gi, '')
+          .trim();
+        const htmlBody = rawBody
+          .split(/\n\n+/)
+          .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+          .join('');
 
-        const messageId = await sendGmail(account.refresh_token, contact.email, subject, body);
+        const messageId = await sendGmail(account.refresh_token, contact.email, subject, htmlBody);
 
         await db.from('email_logs').insert({
           workspace_id: enrollment.workspace_id,
