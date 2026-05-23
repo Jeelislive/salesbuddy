@@ -94,6 +94,19 @@ Features a real sales team needs. Work top-to-bottom.
 - Mix email + SMS steps in a single sequence
 - Opt-out handling (STOP keyword)
 
+### 16. MCP Server (Model Context Protocol)
+- New `apps/mcp/` package using `@modelcontextprotocol/sdk`
+- Exposes SalesBuddy as an MCP server so Claude and other AI clients can control it via natural language
+- Auth via API key stored in MCP client config
+- Tools to expose:
+  - `list_leads` / `create_lead` / `find_leads` (GitHub AI discovery)
+  - `list_sequences` / `enroll_lead`
+  - `list_deals` / `create_deal`
+  - `get_analytics`
+- Works in: Claude.ai (remote MCP), Claude Code (`.claude/mcp.json`), any MCP-compatible client
+- Example usage: "Enroll all Python devs in the cold outreach sequence", "How many emails sent this week?"
+- Est. ~2-3 hours to build v1
+
 ### 15. Company Enrichment
 - Auto-enrich lead's company: funding round, headcount, tech stack, industry
 - Sources: Clearbit (paid) or free alternatives (LinkedIn scrape, Crunchbase)
