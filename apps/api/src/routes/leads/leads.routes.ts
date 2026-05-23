@@ -106,6 +106,18 @@ function ghHeaders(): Record<string, string> {
   return h;
 }
 
+async function ghSearch(q: string, perPage = 30, page = 1): Promise<any[]> {
+  const url = new URL('https://api.github.com/search/users');
+  url.searchParams.set('q', q);
+  url.searchParams.set('per_page', String(perPage));
+  url.searchParams.set('page', String(page));
+  const r = await fetch(url.toString(), { headers: ghHeaders() });
+  console.log(`[GH] search q="${q}" → ${r.status}`);
+  if (!r.ok) { const t = await r.text().catch(() => ''); console.log(`[GH] error body: ${t}`); return []; }
+  const d: any = await r.json();
+  return d.items ?? [];
+}
+
 async function ghFlexSearch(userQuery: string, langs: string[], expFilter: string, page: number): Promise<any[]> {
   const seen = new Set<string>();
   const candidates: any[] = [];
@@ -115,34 +127,25 @@ async function ghFlexSearch(userQuery: string, langs: string[], expFilter: strin
     }
   };
 
-  // Strategy 1: language-based search (exact match on recognized langs)
+  // Strategy 1: language-based search
   if (langs.length > 0) {
     const langResults = await Promise.all(
-      langs.map((lang) => {
-        const q = `language:${encodeURIComponent(lang)}+${expFilter.replace(/ /g, '+')}`;
-        return fetch(`https://api.github.com/search/users?q=${q}&per_page=30&page=${page}`, { headers: ghHeaders() })
-          .then((r) => r.ok ? r.json() : { items: [] })
-          .then((d: any) => d.items ?? [])
-          .catch(() => []);
-      })
+      langs.map(lang => ghSearch(`language:${lang} ${expFilter}`, 30, page).catch(() => []))
     );
     for (const batch of langResults) addBatch(batch);
   }
 
-  // Strategy 2: free-text search using the user's raw query — works for any tech/role
+  // Strategy 2: free-text search
   const stripped = userQuery
-    .replace(/\b(junior|mid|senior|staff|lead|principal|architect|developer|engineer|programmer|years?|yrs?|\d+)\b/gi, '')
-    .trim().replace(/\s+/g, '+');
+    .replace(/\b(junior|mid|senior|staff|lead|principal|architect|developer|engineer|programmer|fullstack|backend|frontend|years?|yrs?|\d+)\b/gi, '')
+    .trim();
   if (stripped && candidates.length < 30) {
-    const q = `${stripped}+${expFilter.replace(/ /g, '+')}`;
-    const free: any[] = await fetch(
-      `https://api.github.com/search/users?q=${q}&per_page=25&page=${page}`, { headers: ghHeaders() }
-    ).then((r) => r.ok ? r.json() : { items: [] })
-      .then((d: any) => d.items ?? [])
-      .catch(() => []);
-    addBatch(free);
+    const filter = langs.length > 0 ? expFilter : 'followers:>10 repos:>3';
+    const batch = await ghSearch(`${stripped} ${filter}`, 25, page).catch(() => []);
+    addBatch(batch);
   }
 
+  console.log(`[GH] candidates after search: ${candidates.length}`);
   return candidates.slice(0, 50);
 }
 
@@ -493,10 +496,34 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { query, limit = 10 } = request.body as { query: string; limit?: number };
       if (!query?.trim()) return reply.status(400).send({ error: 'query is required' });
+
+      let searchQuery = query.trim();
+
+      // Use Claude to extract GitHub-searchable tech keywords from natural language
+      if (process.env.ANTHROPIC_API_KEY) {
+        try {
+          const msg = await anthropic.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 80,
+            system:
+              'Extract the most relevant GitHub user search keywords from the request. ' +
+              'RULES: ' +
+              '1. If a specific programming language is implied, include it (Python, JavaScript, TypeScript, Go, Rust, Java, Ruby, PHP, Swift, Kotlin, Dart, C++). ' +
+              '2. Include a role word if clear: developer, engineer, founder, designer, devops, ml, ai, blockchain. ' +
+              '3. Include one topic if present: saas, startup, open-source, machine-learning, fintech, crypto. ' +
+              '4. Output ONLY 2-4 space-separated lowercase keywords. No punctuation, no explanation. ' +
+              'Examples: "saas founders" → "saas founder startup", "open source contributors" → "open-source developer", "python ml engineers" → "Python machine-learning".',
+            messages: [{ role: 'user', content: query.trim() }],
+          });
+          const text = (msg.content[0] as any)?.text?.trim();
+          if (text) searchQuery = text;
+        } catch { /* fall back to raw query */ }
+      }
+
       try {
         const cap = Math.min(Number(limit) || 10, 30);
-        const leads = await scrapeGithubDevs(query.trim(), cap);
-        return reply.send({ query: query.trim(), leads });
+        const leads = await scrapeGithubDevs(searchQuery, cap);
+        return reply.send({ query: searchQuery, leads });
       } catch (err) {
         fastify.log.error(err);
         return reply.status(502).send({ error: 'GitHub search failed' });
