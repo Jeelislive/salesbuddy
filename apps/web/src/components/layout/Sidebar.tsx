@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Briefcase, Mail, FileText,
   BarChart2, Settings, Search, Plus,
-  Zap, LogOut, ChevronsUpDown, Sun, Moon,
+  Zap, LogOut, ChevronsUpDown, Sun, Moon, Bot,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '@/store/auth.store';
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { icon: Mail, label: 'Outreach', to: '/outreach' },
   { icon: FileText, label: 'Proposals', to: '/proposals' },
   { icon: BarChart2, label: 'Analytics', to: '/analytics' },
+  { icon: Bot, label: 'AI Agent', to: '/agent' },
 ];
 
 export function Sidebar() {

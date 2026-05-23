@@ -2,6 +2,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { promises as dns } from 'dns';
 import { supabase as db } from '@salesbuddy/db';
 import { sendGmail } from '../../services/gmail.service';
+import { runAgent } from '../agents/agents.routes';
 
 async function isEmailValid(email: string): Promise<boolean> {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
@@ -179,5 +180,23 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
 
     fastify.log.info({ valid, invalid }, 'Cron: email verification done');
     return reply.send({ valid, invalid, total: batch.length });
+  });
+
+  // POST /cron/run-agents - trigger all active agents
+  fastify.post('/cron/run-agents', async (request, reply) => {
+    const { secret } = request.query as { secret?: string };
+    if (!process.env['CRON_SECRET'] || secret !== process.env['CRON_SECRET']) {
+      return reply.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const { data: agents } = await db.from('agents').select('id').eq('status', 'active');
+    const list = agents ?? [];
+
+    for (const agent of list) {
+      runAgent(agent.id).catch(err => fastify.log.error({ err, agentId: agent.id }, 'Agent run failed'));
+    }
+
+    fastify.log.info({ count: list.length }, 'Cron: agents triggered');
+    return reply.send({ triggered: list.length });
   });
 };

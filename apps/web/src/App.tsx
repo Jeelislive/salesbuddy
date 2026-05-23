@@ -12,6 +12,7 @@ import { OutreachPage } from '@/pages/outreach/OutreachPage';
 import { ProposalsPage } from '@/pages/proposals/ProposalsPage';
 import { AnalyticsPage } from '@/pages/analytics/AnalyticsPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { AgentPage } from '@/pages/agents/AgentPage';
 import { useAuthStore } from '@/store/auth.store';
 import { useWorkspaceStore } from '@/store/workspace.store';
 import { supabase } from '@/lib/supabase';
@@ -83,6 +84,7 @@ export default function App() {
         <Route path="/proposals" element={<ProposalsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
         <Route path="/settings/*" element={<SettingsPage />} />
+        <Route path="/agent" element={<AgentPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -12,6 +12,7 @@ import { analyticsRoutes } from './routes/analytics/analytics.routes';
 import { adminRoutes } from './routes/admin/admin.routes';
 import { emailRoutes } from './routes/email/email.routes';
 import { cronRoutes } from './routes/cron/cron.routes';
+import { agentsRoutes } from './routes/agents/agents.routes';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -59,6 +60,7 @@ export async function buildApp(): Promise<FastifyInstance> {
       await v1.register(adminRoutes, { prefix: '/admin' });
       await v1.register(emailRoutes, { prefix: '' });
       await v1.register(cronRoutes, { prefix: '' });
+      await v1.register(agentsRoutes, { prefix: '' });
     },
     { prefix: '/api/v1' },
   );
