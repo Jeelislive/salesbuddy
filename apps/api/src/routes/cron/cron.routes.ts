@@ -85,6 +85,8 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
           .replace(/\{\{first_name\}\}/gi, firstName)
           .replace(/\[Your Name\]/gi, '')
           .replace(/\[Sender\]/gi, '')
+          // strip dangling sign-offs left when placeholder is removed
+          .replace(/\n(Best|Regards|Sincerely|Cheers|Thanks|Kind regards|Warm regards|Best regards),?\s*$/i, '')
           .trim();
         const htmlBody = rawBody
           .split(/\n\n+/)

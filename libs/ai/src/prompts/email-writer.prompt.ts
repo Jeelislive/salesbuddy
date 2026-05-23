@@ -53,7 +53,7 @@ Each step object must have these fields:
   "type": "email"
 }
 Write ${steps} steps. Tone: ${tone}. Be concise, value-driven, and avoid spam trigger words.
-IMPORTANT: Do NOT include a signature, sign-off name, or any placeholder like [Your Name] or [Sender]. End each email body after the call-to-action.`,
+IMPORTANT: Do NOT include ANY sign-off, closing line, or signature. No "Best,", "Regards,", "Cheers,", "Thanks,", [Your Name], or [Sender]. End the body immediately after the call-to-action sentence.`,
   };
 
   const userMessage: Anthropic.MessageParam = {
