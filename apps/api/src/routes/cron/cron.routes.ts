@@ -61,7 +61,7 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
       const step = steps.find((s: any) => s.step_number === enrollment.current_step);
 
       if (!step) {
-        // No more steps — complete the enrollment
+        // No more steps - complete the enrollment
         await db.from('sequence_enrollments')
           .update({ status: 'completed', completed_at: new Date().toISOString() })
           .eq('id', enrollment.id);
@@ -145,7 +145,7 @@ export const cronRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.send({ processed, failed, skipped, total: enrollments?.length ?? 0 });
   });
 
-  // POST /cron/verify-emails — check MX records for unverified lead emails
+  // POST /cron/verify-emails - check MX records for unverified lead emails
   fastify.post('/cron/verify-emails', async (request, reply) => {
     const { secret } = request.query as { secret?: string };
     if (!process.env['CRON_SECRET'] || secret !== process.env['CRON_SECRET']) {

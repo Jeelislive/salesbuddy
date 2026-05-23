@@ -68,7 +68,7 @@ export const proposalsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /proposals — create draft
+  // POST /proposals - create draft
   fastify.post(
     '/',
     { preHandler: authenticate },
@@ -108,7 +108,7 @@ export const proposalsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /proposals/generate — AI-generate proposal content
+  // POST /proposals/generate - AI-generate proposal content
   fastify.post(
     '/generate',
     { preHandler: authenticate },
@@ -170,7 +170,7 @@ export const proposalsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // PUT /proposals/:id — update content
+  // PUT /proposals/:id - update content
   fastify.put(
     '/:id',
     { preHandler: authenticate },
@@ -207,7 +207,7 @@ export const proposalsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /proposals/:id/send — mark as sent
+  // POST /proposals/:id/send - mark as sent
   fastify.post(
     '/:id/send',
     { preHandler: authenticate },
@@ -250,7 +250,7 @@ export const proposalsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // GET /proposals/track/:token — PUBLIC endpoint (no auth), marks viewed
+  // GET /proposals/track/:token - PUBLIC endpoint (no auth), marks viewed
   fastify.get(
     '/track/:token',
     async (request, reply) => {

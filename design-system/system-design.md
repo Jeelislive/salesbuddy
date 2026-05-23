@@ -1,4 +1,4 @@
-# SalesBuddy — System Design
+# SalesBuddy - System Design
 
 ## High-Level Architecture
 
@@ -33,7 +33,7 @@
 
 ## Service Breakdown
 
-### `apps/api` — API Gateway
+### `apps/api` - API Gateway
 
 ```
 Express + TypeScript
@@ -49,7 +49,7 @@ Express + TypeScript
 └── Enqueues background jobs via libs/queue → BullMQ
 ```
 
-### `apps/ai-service` — AI Engine (Internal Service)
+### `apps/ai-service` - AI Engine (Internal Service)
 
 ```
 Express + TypeScript (internal, not public)
@@ -62,7 +62,7 @@ Express + TypeScript (internal, not public)
 All powered by Claude API (claude-sonnet-4-6)
 ```
 
-### `apps/outreach-worker` — Background Job Worker
+### `apps/outreach-worker` - Background Job Worker
 
 ```
 BullMQ Workers consuming Redis queues:
@@ -74,7 +74,7 @@ BullMQ Workers consuming Redis queues:
 └── health-scorer        → Recalculates account health scores nightly
 ```
 
-### `apps/webhook-receiver` — Inbound Webhook Handler
+### `apps/webhook-receiver` - Inbound Webhook Handler
 
 ```
 Lightweight Express app
@@ -84,7 +84,7 @@ Lightweight Express app
 └── /webhooks/hubspot      → CRM data change events
 ```
 
-### `apps/web` — React Frontend
+### `apps/web` - React Frontend
 
 ```
 React + Vite + TypeScript

@@ -1,4 +1,4 @@
-# SalesBuddy — Design System & Architecture
+# SalesBuddy - Design System & Architecture
 
 This folder contains all product decisions, feature specs, system design, and architecture rules for SalesBuddy.
 

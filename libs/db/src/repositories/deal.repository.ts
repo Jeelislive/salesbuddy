@@ -130,7 +130,7 @@ export class DealRepository {
   }
 
   /**
-   * Mark a deal as won — sets won_at and probability to 100.
+   * Mark a deal as won - sets won_at and probability to 100.
    */
   async markWon(workspaceId: string, id: string): Promise<Deal> {
     const { data: updated, error } = await supabase
@@ -151,7 +151,7 @@ export class DealRepository {
   }
 
   /**
-   * Mark a deal as lost — sets lost_at, lost_reason, and probability to 0.
+   * Mark a deal as lost - sets lost_at, lost_reason, and probability to 0.
    */
   async markLost(workspaceId: string, id: string, reason: string): Promise<Deal> {
     const { data: updated, error } = await supabase

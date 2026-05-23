@@ -41,7 +41,7 @@ Path aliases (defined in `tsconfig.base.json`): `@salesbuddy/db`, `@salesbuddy/a
 - All routes under `/api/v1/` prefix
 - Auth plugin (`plugins/auth.plugin.ts`) verifies Supabase JWT, decorates every request with `request.user` and `request.workspaceId`
 - Routes: `leads/`, `deals/`, `outreach/` (sequences + enrollments), `proposals/`, `analytics/`, `admin/`, `email/`, `cron/`
-- Cron routes are **not** auth-protected — they use a shared `CRON_SECRET` query param instead
+- Cron routes are **not** auth-protected - they use a shared `CRON_SECRET` query param instead
 
 **Route conventions:**
 - Validate with Zod `.safeParse()`, return `400 { error, code: 'VALIDATION_ERROR', details }` on failure
@@ -58,10 +58,10 @@ Path aliases (defined in `tsconfig.base.json`): `@salesbuddy/db`, `@salesbuddy/a
 ### Database (`libs/db/`)
 
 - `client.ts` exports a service-role `supabase` proxy (lazy singleton) and `createUserClient(token)` for RLS-scoped queries
-- Repository classes (`LeadRepository`, `DealRepository`, `SequenceRepository`) are the data access layer — instantiated once per route file
+- Repository classes (`LeadRepository`, `DealRepository`, `SequenceRepository`) are the data access layer - instantiated once per route file
 - Every table has `workspace_id`; all queries filter by it
 - Soft deletes via `deleted_at`; always add `.is('deleted_at', null)` when reading
-- Migrations in `libs/db/migrations/` — apply all three to Supabase before running
+- Migrations in `libs/db/migrations/` - apply all three to Supabase before running
 
 ### AI (`libs/ai/`)
 
@@ -82,12 +82,12 @@ Path aliases (defined in `tsconfig.base.json`): `@salesbuddy/db`, `@salesbuddy/a
 | Redis | `REDIS_URL` in `apps/api/.env` |
 | Anthropic | `ANTHROPIC_API_KEY` in `apps/api/.env` |
 | Gmail OAuth | `GOOGLE_CLIENT_ID/SECRET/REDIRECT_URI` + `ENCRYPTION_KEY` |
-| Cron jobs | `CRON_SECRET` — sent as `?secret=` query param |
+| Cron jobs | `CRON_SECRET` - sent as `?secret=` query param |
 | Web Supabase | `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `apps/web/.env` |
 
 ## Cron Endpoints
 
 Both called via HTTP POST with `?secret=<CRON_SECRET>`:
 
-- `POST /api/v1/cron/process-sequences` — sends due sequence emails (every 5 min)
-- `POST /api/v1/cron/verify-emails` — MX-validates unverified lead emails, 100/run (every 30 min)
+- `POST /api/v1/cron/process-sequences` - sends due sequence emails (every 5 min)
+- `POST /api/v1/cron/verify-emails` - MX-validates unverified lead emails, 100/run (every 30 min)

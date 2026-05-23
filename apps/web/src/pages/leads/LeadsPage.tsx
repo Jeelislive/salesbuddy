@@ -240,7 +240,7 @@ function FindLeadsModal({ open, onClose, onImport, workspaceId, session }: {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {isGitHub
-                ? <><Github className="w-3.5 h-3.5 text-foreground" /> Searches GitHub users by any query — tech, role, or domain</>
+                ? <><Github className="w-3.5 h-3.5 text-foreground" /> Searches GitHub users by any query - tech, role, or domain</>
                 : <><Sparkles className="w-3.5 h-3.5 text-primary" /> AI refines your prompt to find best-match contacts{aiQuery && aiQuery !== prompt && <span className="text-primary font-medium"> · "{aiQuery}"</span>}</>}
             </div>
             <div className="flex items-center gap-2">
@@ -487,7 +487,7 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
             {csvRows.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Preview — {csvRows.length} rows detected
+                  Preview - {csvRows.length} rows detected
                 </p>
                 <div className="border border-border rounded-lg overflow-hidden">
                   <table className="w-full text-xs">
@@ -501,10 +501,10 @@ function AddLeadModal({ open, onClose, onAdd, workspaceId }: {
                     <tbody className="divide-y divide-border">
                       {csvRows.slice(0, 5).map((r, i) => (
                         <tr key={i} className="hover:bg-accent/30">
-                          <td className="px-3 py-1.5">{`${r.first_name} ${r.last_name}`.trim() || '—'}</td>
-                          <td className="px-3 py-1.5">{r.email || '—'}</td>
-                          <td className="px-3 py-1.5">{r.company_name || '—'}</td>
-                          <td className="px-3 py-1.5">{r.title || '—'}</td>
+                          <td className="px-3 py-1.5">{`${r.first_name} ${r.last_name}`.trim() || '-'}</td>
+                          <td className="px-3 py-1.5">{r.email || '-'}</td>
+                          <td className="px-3 py-1.5">{r.company_name || '-'}</td>
+                          <td className="px-3 py-1.5">{r.title || '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -552,7 +552,7 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead | null; onClose: () => 
           <div className="flex-1 min-w-0">
             <h3 className="text-base font-semibold">{lead.name}</h3>
             {lead.title && <p className="text-sm text-muted-foreground">{lead.title}</p>}
-            {lead.company && lead.company !== '—' && <p className="text-xs text-muted-foreground mt-0.5">{lead.company}</p>}
+            {lead.company && lead.company !== '-' && <p className="text-xs text-muted-foreground mt-0.5">{lead.company}</p>}
           </div>
           <div className="text-right flex-shrink-0">
             <div className={`text-2xl font-bold tabular-nums ${scoreColor}`}>{lead.score}</div>
@@ -567,7 +567,7 @@ function LeadDetailModal({ lead, onClose }: { lead: Lead | null; onClose: () => 
               <a href={`mailto:${lead.email}`} className="text-sm text-primary hover:underline break-all">{lead.email}</a>
             </div>
           )}
-          {lead.company && lead.company !== '—' && (
+          {lead.company && lead.company !== '-' && (
             <div className="flex items-center gap-3">
               <Building className="w-4 h-4 text-muted-foreground flex-shrink-0" />
               <span className="text-sm">{lead.company}</span>
@@ -645,8 +645,8 @@ export function LeadsPage() {
       .eq('workspace_id', workspaceId).is('deleted_at', null)
       .order('created_at', { ascending: false });
     setLeads((data ?? []).map(l => ({
-      id: l.id, name: `${l.first_name} ${l.last_name}`.trim() || '—',
-      email: l.email ?? '', company: l.company_name ?? '—', title: l.title ?? '',
+      id: l.id, name: `${l.first_name} ${l.last_name}`.trim() || '-',
+      email: l.email ?? '', company: l.company_name ?? '-', title: l.title ?? '',
       score: l.score ?? 0, status: (l.status ?? 'new') as Lead['status'],
       source: l.source ?? 'Manual', createdAt: l.created_at,
       avatar: (l.metadata as any)?.avatar,
@@ -710,7 +710,7 @@ export function LeadsPage() {
         const err = await res.json().catch(() => ({}));
         toast((err as any).code === 'NO_AI_KEY'
           ? 'Add ANTHROPIC_API_KEY to apps/api/.env'
-          : 'Enrichment failed — is the API server running?', 'error');
+          : 'Enrichment failed - is the API server running?', 'error');
         return;
       }
       const { enriched } = await res.json();
@@ -735,9 +735,9 @@ export function LeadsPage() {
       }
       const { valid = 0, invalid = 0, total = 0 } = body;
       if (total === 0) {
-        toast('No unverified emails found — all leads are already verified', 'info');
+        toast('No unverified emails found - all leads are already verified', 'info');
       } else {
-        toast(`Verified ${total} emails — ${valid} valid, ${invalid} invalid`, 'success');
+        toast(`Verified ${total} emails - ${valid} valid, ${invalid} invalid`, 'success');
       }
       await loadLeads();
     } catch (e: any) { toast(e?.message || 'Verification failed', 'error'); }
@@ -891,13 +891,13 @@ export function LeadsPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm">{lead.company}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground max-w-[180px] truncate">{lead.title || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground max-w-[180px] truncate">{lead.title || '-'}</td>
                   <td className="px-4 py-3">
                     {lead.email ? (
                       <button
                         onClick={e => handleVerifyOne(lead, e)}
                         disabled={verifyingId === lead.id}
-                        title={lead.emailStatus === 'valid' ? 'Email verified' : lead.emailStatus === 'invalid' ? 'Email invalid — click to re-check' : 'Click to verify email'}
+                        title={lead.emailStatus === 'valid' ? 'Email verified' : lead.emailStatus === 'invalid' ? 'Email invalid - click to re-check' : 'Click to verify email'}
                         className="flex items-center gap-1.5 text-xs transition-colors disabled:opacity-50">
                         {verifyingId === lead.id
                           ? <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
@@ -910,7 +910,7 @@ export function LeadsPage() {
                           {lead.emailStatus === 'valid' ? 'Valid' : lead.emailStatus === 'invalid' ? 'Invalid' : 'Verify'}
                         </span>
                       </button>
-                    ) : <span className="text-xs text-muted-foreground/40">—</span>}
+                    ) : <span className="text-xs text-muted-foreground/40">-</span>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">

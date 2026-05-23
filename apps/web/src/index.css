@@ -35,7 +35,7 @@
   }
 
   .dark {
-    /* Pure dark theme — base: #050505 */
+    /* Pure dark theme - base: #050505 */
     --background: 0 0% 2%;
     --foreground: 0 0% 95%;
     --card: 0 0% 5%;
@@ -54,7 +54,7 @@
     --input: 0 0% 13%;
     --ring: 234 89% 65%;
 
-    /* Sidebar — slightly deeper than background */
+    /* Sidebar - slightly deeper than background */
     --sidebar-bg: 0 0% 1.5%;
     --sidebar-border: 0 0% 10%;
     --sidebar-item: transparent;

@@ -43,7 +43,7 @@ export function buildEmailSequencePrompt(
   const systemMessage: Anthropic.MessageParam = {
     role: 'user',
     content: `You are an expert B2B sales copywriter specialising in cold email sequences that convert.
-Your output MUST be valid JSON — an array of step objects. Do not wrap in markdown code fences.
+Your output MUST be valid JSON - an array of step objects. Do not wrap in markdown code fences.
 Each step object must have these fields:
 {
   "step_number": number (1-based),
@@ -70,7 +70,7 @@ ${icpDescription || 'General B2B prospect'}
 Return ONLY the JSON array. No explanation, no markdown.`,
   };
 
-  // Anthropic expects alternating user/assistant turns — for a single-turn call
+  // Anthropic expects alternating user/assistant turns - for a single-turn call
   // we pass one user message combining the system context and the request.
   const combined: Anthropic.MessageParam = {
     role: 'user',

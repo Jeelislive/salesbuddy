@@ -1,5 +1,5 @@
 -- ============================================================
--- SalesBuddy — Initial Schema
+-- SalesBuddy - Initial Schema
 -- ============================================================
 
 -- Enable UUID generation

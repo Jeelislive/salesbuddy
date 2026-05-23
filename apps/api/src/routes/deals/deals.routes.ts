@@ -42,7 +42,7 @@ const MarkLostSchema = z.object({
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const dealsRoutes: FastifyPluginAsync = async (fastify) => {
-  // GET /deals/stats — register before /:id
+  // GET /deals/stats - register before /:id
   fastify.get(
     '/stats',
     { preHandler: authenticate },
@@ -105,7 +105,7 @@ export const dealsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // GET /deals/:id — includes activities
+  // GET /deals/:id - includes activities
   fastify.get(
     '/:id',
     { preHandler: authenticate },

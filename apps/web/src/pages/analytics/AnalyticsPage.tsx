@@ -126,7 +126,7 @@ export function AnalyticsPage() {
         <div className="grid grid-cols-3 gap-4">
           {/* Email Activity */}
           <Card className="col-span-2">
-            <CardHeader><CardTitle>Email Activity — Last 14 Days</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Email Activity - Last 14 Days</CardTitle></CardHeader>
             <CardContent className="pt-0">
               {loading ? (
                 <Skeleton className="h-48" />
@@ -206,7 +206,7 @@ export function AnalyticsPage() {
             ) : (data?.sequences ?? []).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
                 <Zap className="w-8 h-8 opacity-20" />
-                <p className="text-sm">No sequences yet — create one in Outreach</p>
+                <p className="text-sm">No sequences yet - create one in Outreach</p>
               </div>
             ) : (
               <table className="w-full">

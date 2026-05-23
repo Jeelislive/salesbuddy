@@ -66,7 +66,7 @@ export function createQueue(name: QueueName): Queue {
   return queue;
 }
 
-// ─── Pre-built Queue Instances (lazy — created on first use) ─────────────────
+// ─── Pre-built Queue Instances (lazy - created on first use) ─────────────────
 
 export const emailQueue = new Proxy({} as Queue, {
   get(_, prop) { return (createQueue(Queues.EMAIL_SEND) as any)[prop]; },

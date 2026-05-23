@@ -1,4 +1,4 @@
-# SalesBuddy — Complete Product Features
+# SalesBuddy - Complete Product Features
 
 ## Module 1: ICP & Lead Intelligence
 

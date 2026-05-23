@@ -1,6 +1,6 @@
 # Production TODO
 
-## Cron Job 1 — Sequence Processor (cron-job.org)
+## Cron Job 1 - Sequence Processor (cron-job.org)
 Sends scheduled emails for active sequence enrollments.
 
 ```
@@ -9,7 +9,7 @@ POST https://<your-api-domain>/api/v1/cron/process-sequences?secret=49dfbc43ce53
 - Frequency: **every 5 minutes**
 - Method: POST
 
-## Cron Job 2 — Email Verifier (cron-job.org)
+## Cron Job 2 - Email Verifier (cron-job.org)
 Validates lead email addresses via MX record check before they can be enrolled.
 Only leads with `email_status = 'valid'` appear in the Enroll Leads modal.
 

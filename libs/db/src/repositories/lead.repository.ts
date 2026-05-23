@@ -94,7 +94,7 @@ export class LeadRepository {
   }
 
   /**
-   * Update a lead — only non-deleted leads within the workspace can be updated.
+   * Update a lead - only non-deleted leads within the workspace can be updated.
    */
   async update(workspaceId: string, id: string, data: UpdateLeadInput): Promise<Lead> {
     const { data: updated, error } = await supabase
@@ -125,7 +125,7 @@ export class LeadRepository {
   }
 
   /**
-   * Bulk insert an array of leads — inserts all and returns created records.
+   * Bulk insert an array of leads - inserts all and returns created records.
    */
   async bulkCreate(workspaceId: string, leads: CreateLeadInput[]): Promise<Lead[]> {
     const rows = leads.map((l) => ({

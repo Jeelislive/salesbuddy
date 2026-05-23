@@ -25,7 +25,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left panel — branding */}
+      {/* Left panel - branding */}
       <div className="hidden lg:flex w-1/2 bg-foreground flex-col justify-between p-12">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-background/10 flex items-center justify-center">
@@ -57,7 +57,7 @@ export function LoginPage() {
         </p>
       </div>
 
-      {/* Right panel — login form */}
+      {/* Right panel - login form */}
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-sm">
           {/* Mobile logo */}

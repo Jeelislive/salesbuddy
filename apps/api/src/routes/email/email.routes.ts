@@ -4,7 +4,7 @@ import { getGmailAuthUrl, exchangeCode, encrypt } from '../../services/gmail.ser
 import { supabase as db } from '@salesbuddy/db';
 
 export const emailRoutes: FastifyPluginAsync = async (fastify) => {
-  // GET /email/accounts — list connected email accounts for workspace
+  // GET /email/accounts - list connected email accounts for workspace
   fastify.get('/email/accounts', { preHandler: authenticate }, async (request, reply) => {
     
     const { data } = await db
@@ -15,7 +15,7 @@ export const emailRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.send({ accounts: data ?? [] });
   });
 
-  // GET /email/auth/google — return OAuth URL for frontend to redirect to
+  // GET /email/auth/google - return OAuth URL for frontend to redirect to
   fastify.get('/email/auth/google', { preHandler: authenticate }, async (request, reply) => {
     const state = Buffer.from(JSON.stringify({
       workspaceId: request.workspaceId,
@@ -24,7 +24,7 @@ export const emailRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.send({ url: getGmailAuthUrl(state) });
   });
 
-  // GET /email/auth/google/callback — Google redirects here after consent
+  // GET /email/auth/google/callback - Google redirects here after consent
   fastify.get('/email/auth/google/callback', async (request, reply) => {
     const { code, state, error } = request.query as Record<string, string>;
 
@@ -70,7 +70,7 @@ export const emailRoutes: FastifyPluginAsync = async (fastify) => {
     }
   });
 
-  // DELETE /email/accounts/:id — disconnect account
+  // DELETE /email/accounts/:id - disconnect account
   fastify.delete('/email/accounts/:id', { preHandler: authenticate }, async (request, reply) => {
     const { id } = request.params as { id: string };
     

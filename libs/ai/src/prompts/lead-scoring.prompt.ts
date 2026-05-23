@@ -73,7 +73,7 @@ LEAD INFORMATION:
 ${leadInfo}
 
 IDEAL CUSTOMER PROFILE:
-${icpInfo || 'No specific ICP criteria — use general B2B sales heuristics.'}
+${icpInfo || 'No specific ICP criteria - use general B2B sales heuristics.'}
 
 Respond ONLY with valid JSON in this exact shape (no markdown, no extra text):
 {

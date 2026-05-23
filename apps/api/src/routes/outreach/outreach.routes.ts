@@ -101,7 +101,7 @@ export const outreachRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /sequences/generate — AI-generate sequence steps via Anthropic
+  // POST /sequences/generate - AI-generate sequence steps via Anthropic
   fastify.post(
     '/sequences/generate',
     { preHandler: authenticate },
@@ -169,7 +169,7 @@ export const outreachRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // PUT /sequences/:id/status — pause / resume / archive
+  // PUT /sequences/:id/status - pause / resume / archive
   fastify.put(
     '/sequences/:id/status',
     { preHandler: authenticate },

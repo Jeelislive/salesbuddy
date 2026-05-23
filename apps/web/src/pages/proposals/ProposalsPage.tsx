@@ -27,7 +27,7 @@ const STATUS_BADGE: Record<string, 'success' | 'primary' | 'warning' | 'muted'> 
 };
 
 function relTime(iso: string | null) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3_600_000);
   if (h < 1) return 'just now';
@@ -71,7 +71,7 @@ function NewProposalModal({ open, onClose, onCreated }: {
       <div className="p-6 space-y-4">
         <div className="space-y-1">
           <label className="text-xs font-medium text-muted-foreground">Title *</label>
-          <input value={form.title} placeholder="e.g. SalesBuddy Pro — Acme Inc."
+          <input value={form.title} placeholder="e.g. SalesBuddy Pro - Acme Inc."
             onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
             className="w-full h-9 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors" />
         </div>
@@ -144,7 +144,7 @@ function AIGenerateModal({ open, onClose, onCreated }: {
 
   async function saveProposal() {
     setSaving(true); setError('');
-    const title = `${form.product_name} Proposal — ${form.contact_company || form.contact_first + ' ' + form.contact_last}`;
+    const title = `${form.product_name} Proposal - ${form.contact_company || form.contact_first + ' ' + form.contact_last}`;
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/proposals`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
@@ -177,7 +177,7 @@ function AIGenerateModal({ open, onClose, onCreated }: {
 
   return (
     <Dialog open={open} onClose={onClose} title="AI Generate Proposal"
-      description={step === 'form' ? 'Fill in the details — AI writes the full proposal' : 'Review the AI-generated proposal'}
+      description={step === 'form' ? 'Fill in the details - AI writes the full proposal' : 'Review the AI-generated proposal'}
       size="xl" noPadding>
       <div className="flex flex-col overflow-hidden" style={{ maxHeight: '70vh' }}>
         {step === 'form' ? (
@@ -382,10 +382,10 @@ export function ProposalsPage() {
                         <Avatar fallback={p.contact_name[0].toUpperCase()} size="xs" />
                         <span className="text-sm">{p.contact_name}</span>
                       </div>
-                    ) : <span className="text-sm text-muted-foreground">—</span>}
+                    ) : <span className="text-sm text-muted-foreground">-</span>}
                   </td>
                   <td className="px-4 py-3 text-sm font-semibold">
-                    {p.total_amount != null ? `$${p.total_amount.toLocaleString()}` : '—'}
+                    {p.total_amount != null ? `$${p.total_amount.toLocaleString()}` : '-'}
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={STATUS_BADGE[p.status] ?? 'muted'}>

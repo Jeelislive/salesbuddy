@@ -26,7 +26,7 @@ function isAdminOrOwner(role: string): boolean {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const adminRoutes: FastifyPluginAsync = async (fastify) => {
-  // GET /admin/workspace — get workspace settings
+  // GET /admin/workspace - get workspace settings
   fastify.get(
     '/workspace',
     { preHandler: authenticate },
@@ -51,7 +51,7 @@ export const adminRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // PUT /admin/workspace — update workspace name / settings
+  // PUT /admin/workspace - update workspace name / settings
   fastify.put(
     '/workspace',
     { preHandler: authenticate },
@@ -89,7 +89,7 @@ export const adminRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // GET /admin/members — list workspace members with roles
+  // GET /admin/members - list workspace members with roles
   fastify.get(
     '/members',
     { preHandler: authenticate },
@@ -111,7 +111,7 @@ export const adminRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /admin/members/invite — create invite record
+  // POST /admin/members/invite - create invite record
   fastify.post(
     '/members/invite',
     { preHandler: authenticate },
@@ -175,7 +175,7 @@ export const adminRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // GET /admin/billing — get subscription information
+  // GET /admin/billing - get subscription information
   fastify.get(
     '/billing',
     { preHandler: authenticate },
@@ -190,7 +190,7 @@ export const adminRoutes: FastifyPluginAsync = async (fastify) => {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // No subscription record — return free-tier defaults
+          // No subscription record - return free-tier defaults
           return reply.send({
             plan: 'free',
             status: 'active',

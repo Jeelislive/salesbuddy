@@ -117,7 +117,7 @@ export function DashboardPage() {
       setRecentLeads(
         (leadsListRes.data ?? []).map(l => ({
           ...l,
-          name: `${l.first_name} ${l.last_name}`.trim() || '—',
+          name: `${l.first_name} ${l.last_name}`.trim() || '-',
         }))
       );
       setStatsLoading(false);
@@ -210,7 +210,7 @@ export function DashboardPage() {
               ) : !hasChartData ? (
                 <div className="h-44 flex flex-col items-center justify-center text-muted-foreground gap-2">
                   <Briefcase className="w-8 h-8 opacity-20" />
-                  <p className="text-sm">No deals yet — add your first deal to see the trend</p>
+                  <p className="text-sm">No deals yet - add your first deal to see the trend</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={176}>
@@ -276,7 +276,7 @@ export function DashboardPage() {
             ) : recentLeads.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
                 <Users className="w-8 h-8 opacity-20" />
-                <p className="text-sm">No leads yet — import from the Leads page</p>
+                <p className="text-sm">No leads yet - import from the Leads page</p>
               </div>
             ) : (
               <table className="w-full">
@@ -298,8 +298,8 @@ export function DashboardPage() {
                           <span className="text-sm font-medium">{lead.name}</span>
                         </div>
                       </td>
-                      <td className="py-2.5 text-sm text-muted-foreground">{lead.company_name || '—'}</td>
-                      <td className="py-2.5 text-sm text-muted-foreground">{lead.title || '—'}</td>
+                      <td className="py-2.5 text-sm text-muted-foreground">{lead.company_name || '-'}</td>
+                      <td className="py-2.5 text-sm text-muted-foreground">{lead.title || '-'}</td>
                       <td className="py-2.5">
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">

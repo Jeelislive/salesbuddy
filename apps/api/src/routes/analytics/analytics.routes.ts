@@ -3,7 +3,7 @@ import { authenticate } from '../../plugins/auth.plugin';
 import { supabase } from '@salesbuddy/db';
 
 export const analyticsRoutes: FastifyPluginAsync = async (fastify) => {
-  // GET /analytics/summary — single endpoint for all dashboard analytics
+  // GET /analytics/summary - single endpoint for all dashboard analytics
   fastify.get('/analytics/summary', { preHandler: authenticate }, async (request, reply) => {
     const wid = request.workspaceId;
     const today = new Date(); today.setHours(0, 0, 0, 0);

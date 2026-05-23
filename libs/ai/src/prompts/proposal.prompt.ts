@@ -59,18 +59,18 @@ Description: ${product.description}${benefitsSection}
 Pricing model: ${product.pricing_model ?? 'Custom pricing'}
 
 INSTRUCTIONS:
-Write a complete, professional sales proposal as clean HTML (not markdown, not a full HTML page — just the body content using <h1>, <h2>, <p>, <ul>, <table> tags).
+Write a complete, professional sales proposal as clean HTML (not markdown, not a full HTML page - just the body content using <h1>, <h2>, <p>, <ul>, <table> tags).
 The proposal must include:
-1. Executive Summary — personalised to the recipient
-2. Problem Statement — the challenge their organisation faces
-3. Proposed Solution — how ${product.name} solves it
-4. Key Benefits & ROI — measurable outcomes
-5. Investment — pricing overview (use ${valueStr})
-6. Next Steps — clear call to action
-7. About Us — brief company credibility statement
+1. Executive Summary - personalised to the recipient
+2. Problem Statement - the challenge their organisation faces
+3. Proposed Solution - how ${product.name} solves it
+4. Key Benefits & ROI - measurable outcomes
+5. Investment - pricing overview (use ${valueStr})
+6. Next Steps - clear call to action
+7. About Us - brief company credibility statement
 
 Make it persuasive, concise (600–900 words), and personalised using the recipient's name and company.
-Return ONLY the HTML content — no explanation, no markdown code fences.`,
+Return ONLY the HTML content - no explanation, no markdown code fences.`,
   };
 
   return [message];

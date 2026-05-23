@@ -82,7 +82,7 @@ function NewSequenceModal({ open, onClose, onCreated }: {
       <div className="space-y-4">
         <div>
           <label className="text-xs font-medium text-muted-foreground">Sequence Name</label>
-          <Input className="mt-1" placeholder="e.g. Cold Outreach — SaaS Founders" value={name} onChange={e => setName(e.target.value)} />
+          <Input className="mt-1" placeholder="e.g. Cold Outreach - SaaS Founders" value={name} onChange={e => setName(e.target.value)} />
         </div>
 
         <div className="space-y-2">
@@ -93,7 +93,7 @@ function NewSequenceModal({ open, onClose, onCreated }: {
                 onClick={() => setExpanded(expanded === i ? -1 : i)}
                 className="w-full flex items-center justify-between px-4 py-2.5 bg-muted/30 hover:bg-muted/50 text-sm font-medium"
               >
-                <span>Step {i + 1} {i === 0 ? '(immediate)' : `(+${step.delay_days}d)`} {step.subject ? `— ${step.subject.slice(0, 40)}` : ''}</span>
+                <span>Step {i + 1} {i === 0 ? '(immediate)' : `(+${step.delay_days}d)`} {step.subject ? `- ${step.subject.slice(0, 40)}` : ''}</span>
                 <div className="flex items-center gap-2">
                   {steps.length > 1 && (
                     <span onClick={e => { e.stopPropagation(); removeStep(i); }} className="text-muted-foreground hover:text-destructive p-1">
@@ -118,7 +118,7 @@ function NewSequenceModal({ open, onClose, onCreated }: {
                       value={step.subject} onChange={e => updateStep(i, 'subject', e.target.value)} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Body — use {'{{first_name}}'} for personalization</label>
+                    <label className="text-xs font-medium text-muted-foreground">Body - use {'{{first_name}}'} for personalization</label>
                     <textarea
                       className="mt-1 w-full h-32 px-3 py-2 text-sm bg-background border border-border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-primary"
                       placeholder="Hi {{first_name}}, I noticed you're building a SaaS product..."
@@ -180,7 +180,7 @@ function AIGenerateModal({ open, onClose, onCreated }: {
       if (!res.ok) throw new Error('AI generation failed');
       const { steps } = await res.json();
       setGeneratedSteps(steps);
-      setSequenceName(`AI — ${form.productName} Outreach`);
+      setSequenceName(`AI - ${form.productName} Outreach`);
       setStep('preview');
     } catch (e: any) { toast(e.message || 'Generation failed', 'error'); }
     finally { setGenerating(false); }
@@ -221,7 +221,7 @@ function AIGenerateModal({ open, onClose, onCreated }: {
             <label className="text-xs font-medium text-muted-foreground">Value Proposition *</label>
             <textarea
               className="mt-1 w-full h-20 px-3 py-2 text-sm bg-background border border-border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="e.g. Replace your entire SDR team with AI — find leads, enrich, and send personalized emails automatically"
+              placeholder="e.g. Replace your entire SDR team with AI - find leads, enrich, and send personalized emails automatically"
               value={form.valueProp} onChange={e => update('valueProp', e.target.value)}
             />
           </div>
@@ -273,7 +273,7 @@ function AIGenerateModal({ open, onClose, onCreated }: {
                   } />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Body — use {'{{first_name}}'} for personalization</label>
+                  <label className="text-xs text-muted-foreground">Body - use {'{{first_name}}'} for personalization</label>
                   <textarea
                     className="mt-1 w-full h-40 px-3 py-2 text-sm bg-background border border-border rounded-lg resize-y focus:outline-none focus:ring-1 focus:ring-primary"
                     value={s.body ?? ''}
@@ -393,7 +393,7 @@ function EnrollLeadsModal({ open, onClose, sequence, onEnrolled }: {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} title={`Enroll Leads — ${sequence?.name ?? ''}`} size="lg" noPadding>
+    <Dialog open={open} onClose={onClose} title={`Enroll Leads - ${sequence?.name ?? ''}`} size="lg" noPadding>
       <div className="flex flex-col h-full">
         {/* Filter tabs */}
         <div className="px-6 pt-3 pb-0 flex items-center gap-1 border-b border-border">
@@ -538,7 +538,7 @@ export function OutreachPage() {
         ].map(({ label, value }) => (
           <div key={label} className="bg-background px-6 py-3">
             <p className="text-xxs text-muted-foreground uppercase tracking-wider">{label}</p>
-            <p className="text-xl font-bold mt-0.5">{loading ? '—' : value}</p>
+            <p className="text-xl font-bold mt-0.5">{loading ? '-' : value}</p>
           </div>
         ))}
       </div>
@@ -577,7 +577,7 @@ export function OutreachPage() {
                     <div className="flex items-center gap-6 mt-3">
                       {[
                         { label: 'Enrolled', value: seq.enrolled },
-                        { label: 'Replied', value: seq.replied, pct: seq.enrolled ? `${Math.round(seq.replied / seq.enrolled * 100)}%` : '—' },
+                        { label: 'Replied', value: seq.replied, pct: seq.enrolled ? `${Math.round(seq.replied / seq.enrolled * 100)}%` : '-' },
                       ].map(({ label, value, pct }) => (
                         <div key={label}>
                           <p className="text-xxs text-muted-foreground uppercase tracking-wider">{label}</p>

@@ -1,5 +1,5 @@
 -- ============================================================
--- SalesBuddy — Email Outreach Schema
+-- SalesBuddy - Email Outreach Schema
 -- ============================================================
 
 -- Add scheduling columns to sequence_enrollments

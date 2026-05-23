@@ -60,25 +60,25 @@ const HOW_STEPS = [
   {
     n: '01', icon: Radar,
     title: 'Finds and prioritizes high-intent leads',
-    desc: 'Search 250M+ verified B2B contacts or import from your CRM. Buddy enriches every prospect using 22+ data sources — firmographics, technographics, intent signals, funding rounds, and leadership changes — then ranks them by likelihood to convert right now.',
+    desc: 'Search 250M+ verified B2B contacts or import from your CRM. Buddy enriches every prospect using 22+ data sources - firmographics, technographics, intent signals, funding rounds, and leadership changes - then ranks them by likelihood to convert right now.',
     tags: ['Intent signals', 'Funding data', 'Technographics', 'Job change alerts'],
   },
   {
     n: '02', icon: Send,
     title: 'Launches personalized multi-channel sequences',
-    desc: 'Buddy writes hyper-personalized outreach using Claude AI — referencing the prospect\'s recent blog post, LinkedIn activity, or company news. Sequences run across email, LinkedIn, and phone. Every message feels hand-crafted, every send is perfectly timed.',
+    desc: 'Buddy writes hyper-personalized outreach using Claude AI - referencing the prospect\'s recent blog post, LinkedIn activity, or company news. Sequences run across email, LinkedIn, and phone. Every message feels hand-crafted, every send is perfectly timed.',
     tags: ['Email sequences', 'LinkedIn outreach', 'Native dialer', 'Send-time optimization'],
   },
   {
     n: '03', icon: SlidersHorizontal,
     title: 'Tests and optimizes messaging automatically',
-    desc: 'Buddy runs dozens of message variations per campaign simultaneously — testing subject lines, opening hooks, CTAs, tone, and length. She reads the results in real time and shifts volume toward what\'s working, so performance compounds over time.',
+    desc: 'Buddy runs dozens of message variations per campaign simultaneously - testing subject lines, opening hooks, CTAs, tone, and length. She reads the results in real time and shifts volume toward what\'s working, so performance compounds over time.',
     tags: ['A/B testing', 'Subject line testing', 'Auto-optimization', 'Performance analytics'],
   },
   {
     n: '04', icon: Calendar,
     title: 'Handles replies and books meetings autonomously',
-    desc: 'Buddy reads every inbound reply with AI, classifies intent, handles common objections with pre-approved responses, and books meetings directly on your reps\' calendars. You define the escalation rules — Buddy executes them flawlessly every time.',
+    desc: 'Buddy reads every inbound reply with AI, classifies intent, handles common objections with pre-approved responses, and books meetings directly on your reps\' calendars. You define the escalation rules - Buddy executes them flawlessly every time.',
     tags: ['Reply classification', 'Objection handling', 'Calendar integration', 'Escalation rules'],
   },
 ];
@@ -89,7 +89,7 @@ const FEATURES = [
   { icon: Target,       color: 'text-rose-600 dark:text-rose-400',     bg: 'bg-rose-50 dark:bg-rose-950/25 border-rose-100 dark:border-rose-900/40',         title: 'Deal Intelligence',        desc: 'AI-powered probability scores, next-step recommendations, and risk flags on every open deal. Know exactly which deals need attention before they slip.' },
   { icon: FileSignature,color: 'text-emerald-600 dark:text-emerald-400',bg:'bg-emerald-50 dark:bg-emerald-950/25 border-emerald-100 dark:border-emerald-900/40',title: 'AI Proposal Generator',   desc: 'Generate beautiful, fully personalized proposals in under 60 seconds. Track opens, time on page, and section engagement. Get notified the moment a prospect re-opens.' },
   { icon: Activity,     color: 'text-amber-600 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-950/25 border-amber-100 dark:border-amber-900/40',     title: 'Revenue Forecasting',      desc: 'Claude AI analyzes your pipeline, rep history, and market signals to predict monthly revenue with tight confidence intervals. Know where you\'ll land before the quarter ends.' },
-  { icon: MessageSquare,color: 'text-cyan-600 dark:text-cyan-400',     bg: 'bg-cyan-50 dark:bg-cyan-950/25 border-cyan-100 dark:border-cyan-900/40',         title: 'Call Intelligence',        desc: 'Every sales call transcribed, summarized, and scored. BANT/MEDDIC fields extracted automatically. Action items assigned. Coaching insights surfaced — without listening to a single recording.' },
+  { icon: MessageSquare,color: 'text-cyan-600 dark:text-cyan-400',     bg: 'bg-cyan-50 dark:bg-cyan-950/25 border-cyan-100 dark:border-cyan-900/40',         title: 'Call Intelligence',        desc: 'Every sales call transcribed, summarized, and scored. BANT/MEDDIC fields extracted automatically. Action items assigned. Coaching insights surfaced - without listening to a single recording.' },
 ];
 
 const USE_CASES = [
@@ -98,7 +98,7 @@ const USE_CASES = [
     tagColor: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40',
     icon: Flame,
     title: 'Intent-driven cold outbound that converts',
-    desc: 'Buddy monitors real-time buying signals — new funding rounds, leadership hires, tech stack changes, G2 reviews, job postings — and triggers personalized campaigns the moment a prospect enters a buying window. No more spray and pray.',
+    desc: 'Buddy monitors real-time buying signals - new funding rounds, leadership hires, tech stack changes, G2 reviews, job postings - and triggers personalized campaigns the moment a prospect enters a buying window. No more spray and pray.',
     bullets: [
       'Signal-triggered campaigns launch automatically',
       'Multi-channel: email, LinkedIn, phone in one sequence',
@@ -111,12 +111,12 @@ const USE_CASES = [
     tagColor: 'bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400 border border-violet-100 dark:border-violet-900/40',
     icon: Network,
     title: 'Turn your CRM into a revenue machine',
-    desc: 'Your CRM is full of gold — MQLs who went cold, conference leads who never converted, closed-lost deals from 6 months ago. Buddy re-engages every single one with fresh, contextually aware outreach that references their history and has moved on from stale pitches.',
+    desc: 'Your CRM is full of gold - MQLs who went cold, conference leads who never converted, closed-lost deals from 6 months ago. Buddy re-engages every single one with fresh, contextually aware outreach that references their history and has moved on from stale pitches.',
     bullets: [
       'Works every MQL, event lead, and trial signup automatically',
       'Reactivates closed-lost with new angles and updated messaging',
       'Context-aware personalization pulls from CRM notes and history',
-      'No manual segmentation — Buddy figures it out from your data',
+      'No manual segmentation - Buddy figures it out from your data',
     ],
   },
   {
@@ -144,7 +144,7 @@ const TESTIMONIALS = [
   },
   {
     company: 'SumUp', companyColor: 'text-emerald-600 dark:text-emerald-400',
-    quote: 'We\'re achieving a $52 cost per lead and have sent hundreds of thousands of highly personalized emails through SalesBuddy. The AI personalization is the real differentiator — prospects genuinely think a human wrote it.',
+    quote: 'We\'re achieving a $52 cost per lead and have sent hundreds of thousands of highly personalized emails through SalesBuddy. The AI personalization is the real differentiator - prospects genuinely think a human wrote it.',
     name: 'Karlo Biuk', title: 'Growth Lead, SumUp',
     initials: 'KB', bg: 'bg-emerald-600', stars: 5,
     metric: '$52', metricLabel: 'cost per lead',
@@ -269,13 +269,13 @@ export function LandingPage() {
             <span className="text-foreground/25">with one AI rep.</span>
           </h1>
 
-          {/* Sub — Playfair italic */}
+          {/* Sub - Playfair italic */}
           <p
             className="mt-6 text-[19px] text-muted-foreground max-w-2xl mx-auto leading-relaxed"
             style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
           >
             SalesBuddy finds your best leads, writes personalized outreach, handles objections,
-            and books meetings — completely on autopilot, at a fraction of the cost.
+            and books meetings - completely on autopilot, at a fraction of the cost.
           </p>
 
           {/* CTAs */}
@@ -316,7 +316,7 @@ export function LandingPage() {
           </div>
         </div>
 
-        {/* ─── Dashboard Preview — theme-aware ─── */}
+        {/* ─── Dashboard Preview - theme-aware ─── */}
         <div className="max-w-7xl mx-auto mt-14">
           <div className="rounded-t-2xl border border-border dark:border-white/10 border-b-0 shadow-[0_-16px_80px_rgba(0,0,0,0.14)] dark:shadow-[0_-16px_80px_rgba(255,255,255,0.04)] overflow-hidden">
             {/* Browser chrome */}
@@ -524,7 +524,7 @@ export function LandingPage() {
               <span className="text-foreground/25">Buddy runs it forever.</span>
             </h2>
             <p className="text-muted-foreground mt-5 text-[15px] max-w-xl mx-auto leading-relaxed">
-              From first touch to booked meeting — fully automated, continuously improving, always-on.
+              From first touch to booked meeting - fully automated, continuously improving, always-on.
             </p>
           </div>
 
@@ -783,7 +783,7 @@ export function LandingPage() {
             style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
           >
             Join hundreds of companies that have replaced manual outbound with
-            SalesBuddy — and never looked back.
+            SalesBuddy - and never looked back.
           </p>
           <div className="flex items-center justify-center gap-3 mt-10">
             <Link

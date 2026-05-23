@@ -164,7 +164,7 @@ async function ghFetchProfiles(candidates: any[], limit = 20): Promise<any[]> {
 const STOP_WORDS = new Set(['the', 'and', 'for', 'are', 'with', 'that', 'this', 'have', 'from', 'not', 'but']);
 
 function ghScoreProfiles(profiles: any[], userQuery: string, langs: string[], tier: number) {
-  // Score by matching query terms against bio — works for any free-text query
+  // Score by matching query terms against bio - works for any free-text query
   const queryTerms = userQuery
     .toLowerCase()
     .split(/\W+/)
@@ -259,7 +259,7 @@ async function scrapeGithubDevs(query: string, limit: number): Promise<any[]> {
       })
     );
 
-    // Only keep leads that have an email — push until we hit limit
+    // Only keep leads that have an email - push until we hit limit
     for (const d of enriched) {
       if (results.length >= limit) break;
       results.push(d);
@@ -335,7 +335,7 @@ const BulkImportSchema = z.object({
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
-  // POST /leads/enrich-batch — enrich multiple leads with AI (no Redis needed)
+  // POST /leads/enrich-batch - enrich multiple leads with AI (no Redis needed)
   fastify.post(
     '/enrich-batch',
     { preHandler: authenticate },
@@ -393,7 +393,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /leads/ai-discover — AI-powered lead search
+  // POST /leads/ai-discover - AI-powered lead search
   fastify.post(
     '/ai-discover',
     { preHandler: authenticate },
@@ -448,7 +448,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /leads/verify-emails — bulk MX verify all unverified leads in workspace
+  // POST /leads/verify-emails - bulk MX verify all unverified leads in workspace
   fastify.post(
     '/verify-emails',
     { preHandler: authenticate },
@@ -483,7 +483,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /leads/:id/verify-email — verify a single lead's email on demand
+  // POST /leads/:id/verify-email - verify a single lead's email on demand
   fastify.post(
     '/:id/verify-email',
     { preHandler: authenticate },
@@ -510,7 +510,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /leads/github-devs — GitHub developer lead search using user's free-text query
+  // POST /leads/github-devs - GitHub developer lead search using user's free-text query
   fastify.post(
     '/github-devs',
     { preHandler: authenticate },
@@ -552,7 +552,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // GET /leads/stats — must be registered before /leads/:id to avoid route conflict
+  // GET /leads/stats - must be registered before /leads/:id to avoid route conflict
   fastify.get(
     '/stats',
     { preHandler: authenticate },
@@ -615,7 +615,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /leads/import — bulk import
+  // POST /leads/import - bulk import
   fastify.post(
     '/import',
     { preHandler: authenticate },
@@ -688,7 +688,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // DELETE /leads/:id — soft delete
+  // DELETE /leads/:id - soft delete
   fastify.delete(
     '/:id',
     { preHandler: authenticate },
@@ -709,7 +709,7 @@ export const leadsRoutes: FastifyPluginAsync = async (fastify) => {
     },
   );
 
-  // POST /leads/:id/enrich — enqueue BullMQ enrichment job
+  // POST /leads/:id/enrich - enqueue BullMQ enrichment job
   fastify.post(
     '/:id/enrich',
     { preHandler: authenticate },
