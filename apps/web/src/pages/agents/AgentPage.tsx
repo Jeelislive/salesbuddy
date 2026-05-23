@@ -135,7 +135,7 @@ export function AgentPage() {
   }, [headers]);
 
   const loadAgent = useCallback(async () => {
-    if (!workspaceId || !session) return;
+    if (!workspaceId || !session) { setLoading(false); return; }
     setLoading(true);
     try {
       const res = await fetch(`${API}/api/v1/agents`, { headers: headers() });
