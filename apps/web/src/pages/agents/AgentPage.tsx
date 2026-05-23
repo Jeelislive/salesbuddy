@@ -309,6 +309,38 @@ export function AgentPage() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+        {/* ── Cumulative stats row ──────────────────────────────── */}
+        {(() => {
+          const totalRuns   = logs.filter(l => l.action === 'find_leads').length;
+          const totalFound  = logs.filter(l => l.action === 'find_leads').reduce((s, l) => s + (l.details?.inserted ?? 0), 0);
+          const totalValid  = logs.filter(l => l.action === 'verify_emails').reduce((s, l) => s + (l.details?.valid ?? 0), 0);
+          const totalEnroll = logs.filter(l => l.action === 'enroll_leads').reduce((s, l) => s + (l.details?.enrolled ?? 0), 0);
+          const stats = [
+            { label: 'Total Runs',      value: totalRuns,   icon: <Zap className="w-4 h-4 text-yellow-500" /> },
+            { label: 'Leads Imported',  value: totalFound,  icon: <UserSearch className="w-4 h-4 text-blue-500" /> },
+            { label: 'Emails Verified', value: totalValid,  icon: <MailCheck  className="w-4 h-4 text-purple-500" /> },
+            { label: 'Leads Enrolled',  value: totalEnroll, icon: <Users2     className="w-4 h-4 text-green-500" /> },
+          ];
+          return (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {stats.map(s => (
+                <Card key={s.label}>
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      {s.icon}
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-foreground leading-none">{s.value}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          );
+        })()}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* ── Config card ─────────────────────────────────────── */}
@@ -498,43 +530,78 @@ export function AgentPage() {
           </div>
         </div>
 
-        {/* ── Activity Log ──────────────────────────────────────── */}
-        <Card>
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Search className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Activity Log</h3>
-              <span className="text-xs text-muted-foreground ml-auto">{logs.length} entries</span>
-            </div>
-            {logs.length === 0 ? (
-              <div className="text-center py-8 text-sm text-muted-foreground">
-                No activity yet — run the agent to see logs here.
-              </div>
-            ) : (
-              <div className="overflow-y-auto" style={{ maxHeight: 400 }}>
-                {logs.map(log => (
-                  <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
-                    <div className="mt-0.5 flex-shrink-0">{ACTION_ICON[log.action] ?? <Bot className="w-4 h-4 text-muted-foreground" />}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <StatusIcon status={log.status} />
-                        <span className="text-sm text-foreground">{log.summary}</span>
-                      </div>
-                      {Object.keys(log.details ?? {}).length > 0 && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {Object.entries(log.details).map(([k, v]) => `${k}: ${v}`).join(' · ')}
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground flex-shrink-0 mt-0.5 ml-2">
-                      {timeAgo(log.created_at)}
-                    </span>
+        {/* ── Run History ───────────────────────────────────────── */}
+        {(() => {
+          // Group logs into runs: logs within 10 min of each other = same run
+          const runs: AgentLog[][] = [];
+          const sorted = [...logs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          for (const log of sorted) {
+            const last = runs[runs.length - 1];
+            if (last && Math.abs(new Date(log.created_at).getTime() - new Date(last[last.length - 1].created_at).getTime()) < 10 * 60 * 1000) {
+              last.push(log);
+            } else {
+              runs.push([log]);
+            }
+          }
+          return (
+            <Card>
+              <CardContent className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Search className="w-4 h-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold text-foreground">Run History</h3>
+                  <span className="text-xs text-muted-foreground ml-auto">{runs.length} run{runs.length !== 1 ? 's' : ''}</span>
+                </div>
+                {runs.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-muted-foreground">
+                    No activity yet — run the agent to see history here.
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                ) : (
+                  <div className="overflow-y-auto space-y-3" style={{ maxHeight: 480 }}>
+                    {runs.map((run, i) => {
+                      const ts = run[0].created_at;
+                      const anyFailed = run.some(l => l.status === 'failed');
+                      const allOk = run.every(l => l.status === 'success');
+                      const runLabel = anyFailed ? 'failed' : allOk ? 'success' : 'partial';
+                      const runColor = runLabel === 'success' ? 'text-green-600' : runLabel === 'failed' ? 'text-red-500' : 'text-yellow-500';
+                      return (
+                        <div key={i} className="border border-border rounded-lg overflow-hidden">
+                          <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30">
+                            <span className={`text-xs font-semibold uppercase tracking-wide ${runColor}`}>
+                              Run #{runs.length - i}
+                            </span>
+                            <span className="text-xs text-muted-foreground">·</span>
+                            <span className="text-xs text-muted-foreground">{new Date(ts).toLocaleString()}</span>
+                            <span className="text-xs text-muted-foreground ml-auto">{timeAgo(ts)}</span>
+                          </div>
+                          {run.map(log => (
+                            <div key={log.id} className="flex items-start gap-3 px-4 py-2.5 border-t border-border">
+                              <div className="mt-0.5 flex-shrink-0">{ACTION_ICON[log.action] ?? <Bot className="w-4 h-4 text-muted-foreground" />}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <StatusIcon status={log.status} />
+                                  <span className="text-sm text-foreground">{log.summary}</span>
+                                </div>
+                                {Object.keys(log.details ?? {}).length > 0 && (
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {Object.entries(log.details).map(([k, v]) => (
+                                      <span key={k} className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                                        {k}: <strong className="text-foreground">{String(v)}</strong>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
       </div>
     </div>
   );

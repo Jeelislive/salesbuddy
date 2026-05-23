@@ -106,17 +106,21 @@ export async function enrollQualifiedLeads(
     .select('contact_id')
     .eq('workspace_id', workspaceId)
     .eq('sequence_id', sequenceId);
-  const enrolledIds = new Set((enrolled ?? []).map((e: any) => e.contact_id));
+  const enrolledIds = (enrolled ?? []).map((e: any) => e.contact_id);
 
-  const { data: leads } = await db.from('leads')
+  // Fetch qualified leads that are NOT already enrolled
+  const query = db.from('leads')
     .select('id')
     .eq('workspace_id', workspaceId)
     .eq('email_status', 'valid')
     .gte('score', minScore)
     .is('deleted_at', null)
+    .order('score', { ascending: false })
     .limit(limit);
 
-  const toEnroll = (leads ?? []).filter((l: any) => !enrolledIds.has(l.id));
+  if (enrolledIds.length > 0) query.not('id', 'in', `(${enrolledIds.join(',')})`);
+
+  const { data: toEnroll } = await query;
 
   const nextSendAt = new Date();
   if (step1?.delay_days) nextSendAt.setDate(nextSendAt.getDate() + step1.delay_days);
