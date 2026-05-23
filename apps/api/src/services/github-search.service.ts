@@ -119,10 +119,14 @@ async function ghFlexSearch(userQuery: string, langs: string[], expFilter: strin
   }
   const stripped = userQuery
     .replace(/\b(junior|mid|senior|staff|lead|principal|architect|developer|engineer|programmer|fullstack|backend|frontend|years?|yrs?|\d+)\b/gi, '')
-    .trim();
+    .replace(/[,]+/g, ' ').replace(/\s+/g, ' ').trim();
   if (stripped && candidates.length < 30) {
     const filter = langs.length > 0 ? expFilter : 'followers:>10 repos:>3';
     add(await ghSearch(`${stripped} ${filter}`, 25, page).catch(() => []));
+  }
+  // Last-resort fallback: if still no candidates, search by experience filter alone
+  if (candidates.length === 0) {
+    add(await ghSearch(`${expFilter} type:user`, 30, page).catch(() => []));
   }
   return candidates.slice(0, 50);
 }
